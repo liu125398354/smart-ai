@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>测试流式数据</title>
+</head>
+<body>
+<div id="calendar" style="width: 600px; height: 400px;"></div>
+<script type="text/javascript">
+  let eventSource = null
+  let aaa = ""
+  if (eventSource) {
+    eventSource.close()
+  }
+  eventSource = new EventSource('http://127.0.0.1:3000/qianfan/getQianFanMessage?content=' + "你好");
+  // 在连接成功时打印信息
+  eventSource.onopen = function() {
+    console.log("SSE connection opened");
+  };
+  eventSource.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    console.log('[SSE 块]--->', data.text); // 实时显示
+    aaa += data.text
+  };
+  eventSource.onerror = (e) => {
+    console.log("连接错误了！！！！")
+    eventSource.close();  // 错误时关闭连接
+  }
+  eventSource.onclose = (e) => {
+    console.log("关闭连接了！！！！")
+    // 当连接关闭时，手动关闭 EventSource 防止重连
+    eventSource.close();
+  }
+
+
+  // async function test() {
+  //   const response = await fetch('http://127.0.0.1:3000/qianfan/getQianFanMessage', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json', // 明确指定 JSON 格式
+  //     },
+  //     body: JSON.stringify({ content: "你好" })
+  //   });
+  //
+  //   const reader = response.body.getReader();
+  //   const decoder = new TextDecoder();
+  //
+  //   const output = document.getElementById('output');
+  //   let done = false;
+  //   let aaa = '';
+  //
+  //   while (!done) {
+  //     const { value, done: doneReading } = await reader.read();
+  //     done = doneReading;
+  //     const chunk = decoder.decode(value, { stream: true });
+  //
+  //     // 这里将 chunk 直接输出，并累加
+  //     console.log("Current Chunk:", chunk);
+  //     aaa += chunk;
+  //     // 将内容逐步更新到页面
+  //   }
+  // }
+  //
+  // test()
+
+
+</script>
+</body>
+</html>
