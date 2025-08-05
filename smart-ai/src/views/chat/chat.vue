@@ -51,7 +51,7 @@
               </div>
               <div class="chat-right-content">
                 <p class="chat-time chat-right-time">{{ parseTime(item.createTime) }}</p>
-                <div class="chat-content markdown-body" v-html="marked.parse(item.content)"></div>
+                <div class="chat-content markdown-body" v-html="md.render(item.content)"></div>
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -64,7 +64,7 @@
               </div>
               <div class="chat-left-content">
                 <p class="chat-time">{{ parseTime(item.createTime) }}</p>
-                <div class="chat-marked markdown-body" v-html="marked.parse(item.content)"></div>
+                <div class="chat-marked markdown-body" v-html="md.render(item.content)"></div>
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -115,13 +115,16 @@ import {
 import { createVNode } from "vue"
 import { message, Modal } from "ant-design-vue"
 
-import { Marked, Renderer } from "marked"
-import { markedHighlight } from "marked-highlight"
+// import { Marked, Renderer } from "marked"
+// import { markedHighlight } from "marked-highlight"
 import "github-markdown-css/github-markdown.css"
 import hljs from "highlight.js"
 import "highlight.js/styles/atom-one-dark.css"
+// import 'highlight.js/styles/github.css'
 
-import katex from "katex"
+import MarkdownIt from "markdown-it"
+import mk from "markdown-it-katex"
+// import katex from "katex"
 import "katex/dist/katex.min.css"
 import markedKatexExtension from "marked-katex-extension"
 
@@ -139,166 +142,31 @@ let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
 
-// const marked = new Marked(
-//   markedHighlight({
-//     langPrefix: "hljs language-",
-//     gfm: true, // 启动类似于Github样式的Markdown语法
-//     tables: true,
-//     pedantic: false, // 只解析符合Markdwon定义的，不修正Markdown的错误
-//     sanitize: false, // 原始输出，忽略HTML标签（关闭后，可直接渲染HTML标签）
-//     highlight(code, lang) {
-//       const language = hljs.getLanguage(lang) ? lang : "plaintext"
-//       return hljs.highlight(code, { language }).value
-//     }
-//   })
-// )
-
-// const marked = new Marked()
-
-// 1. 创建渲染器实例
-const renderer = new Renderer()
-
-// 自定义 KaTeX 选项
-const katexOptions = {
-  macros: {
-    "\\RR": "\\mathbb{R}", // 自定义宏
-    "\\abs": ["\\left| #1 \\right|", 1]
-  },
-  strict: false, // 宽松解析模式
-  output: "htmlAndMathml" // 同时输出 HTML 和 MathML
-}
-
-renderer.code = (code, lang) => {
-  if (lang === "math") {
-    try {
-      return katex.renderToString(code, {
-        ...katexOptions,
-        displayMode: true,
-        throwOnError: false
-      })
-    } catch (e) {
-      return `<div class="katex-error">${e.message}</div>`
+// 创建 markdown-it 实例并配置 KaTeX 插件
+const md = new MarkdownIt({
+  // html: true, // 允许 HTML 标签
+  linkify: true, // 自动转换 URL 为链接
+  // typographer: true // 优化排版
+  highlight: (str, lang) => {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return (
+          '<pre class="hljs"><code>' +
+          hljs.highlight(str, { language: lang }).value +
+          "</code></pre>"
+        )
+      } catch (err) {
+        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
+      }
     }
+    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
   }
-  const validLang = hljs.getLanguage(lang) ? lang : "plaintext"
-  const highlighted = hljs.highlight(code, { language: validLang }).value
-  return `<pre><code class="hljs">${highlighted}</code></pre>`
-}
+})
 
-// 处理行内数学公式 ($...$)
-renderer.text = (text) => {
-  const inlineRegex = /\$(.*?)\$/g
-  return text.replace(inlineRegex, (_, math) => {
-    try {
-      return katex.renderToString(math, {
-        throwOnError: false,
-        displayMode: false
-      })
-    } catch (e) {
-      return `<span class="katex-error">${math}</span>`
-    }
-  })
-}
-
-// 处理块级数学公式 ($$...$$)
-renderer.html = (html) => {
-  const blockRegex = /\$\$\s*([\s\S]*?)\s*\$\$/g
-  return html.replace(blockRegex, (_, math) => {
-    try {
-      return katex.renderToString(math, {
-        throwOnError: false,
-        displayMode: true
-      })
-    } catch (e) {
-      return `<div class="katex-error">${math}</div>`
-    }
-  })
-}
-
-// // 保存原始文本渲染器
-// const originalTextRenderer = renderer.text.bind(renderer)
-//
-// // 2. 增强行内公式处理（处理导数等复杂公式）
-// renderer.text = (text) => {
-//   // 改进的正则表达式，正确处理导数符号和复杂公式
-//   const inlineMathRegex = /(?<!\\)\$((?:\\\$|[^$])+?)\$(?!\$)/g
-//
-//   let output = ""
-//   let lastIndex = 0
-//   let match
-//
-//   while ((match = inlineMathRegex.exec(text)) !== null) {
-//     // 添加正则匹配之前的文本
-//     output += originalTextRenderer(text.slice(lastIndex, match.index))
-//
-//     try {
-//       // 渲染数学公式（包括导数符号）
-//       output += katex.renderToString(match[1].replace(/\\\$/g, "$"), {
-//         ...katexOptions,
-//         displayMode: false,
-//         throwOnError: false
-//       })
-//     } catch (e) {
-//       output += `<span class="katex-error">${match[0]}</span>`
-//     }
-//
-//     lastIndex = match.index + match[0].length
-//   }
-//
-//   // 添加剩余文本
-//   output += originalTextRenderer(text.slice(lastIndex))
-//
-//   return output
-// }
-//
-// // 3. 增强块级公式处理（处理矩阵和多行公式）
-// renderer.paragraph = (text) => {
-//   // 改进的正则表达式，正确处理多行矩阵
-//   const blockMathRegex = /^\s*\$\$((.|\n)+?)\$\$\s*$/
-//
-//   const match = blockMathRegex.exec(text)
-//   if (match) {
-//     try {
-//       return katex.renderToString(match[1].trim(), {
-//         ...katexOptions,
-//         displayMode: true,
-//         throwOnError: false
-//       })
-//     } catch (e) {
-//       return `<div class="katex-error">${match[0]}</div>`
-//     }
-//   }
-//
-//   // 处理段落中的行内公式
-//   return `<p>${renderer.text(text)}</p>`
-// }
-//
-// // 4. 添加自定义块级渲染器，确保矩阵正确识别
-// renderer.html = (html) => {
-//   // 处理可能被包裹在HTML标签中的公式
-//   const blockMathRegex = /\$\$([\s\S]+?)\$\$/g
-//   return html.replace(blockMathRegex, (_, math) => {
-//     try {
-//       return katex.renderToString(math.trim(), {
-//         ...katexOptions,
-//         displayMode: true,
-//         throwOnError: false
-//       })
-//     } catch (e) {
-//       return `<div class="katex-error">${math}</div>`
-//     }
-//   })
-// }
-
-const marked = new Marked({
-  renderer,
-  gfm: true,
-  pedantic: false,
-  sanitize: false,
-  tables: true,
-  breaks: false,
-  smartLists: true,
-  smartypants: false
+// 使用 KaTeX 插件
+md.use(mk, {
+  throwOnError: false, // 公式错误时不抛出异常
+  errorColor: "#cc0000" // 错误公式显示颜色
 })
 
 const messageList = computed(() => store.getters.getMessageData)
