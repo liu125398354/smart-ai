@@ -51,7 +51,7 @@
               </div>
               <div class="chat-right-content">
                 <p class="chat-time chat-right-time">{{ parseTime(item.createTime) }}</p>
-                <div class="chat-content markdown-body" v-html="md.render(item.content)"></div>
+                <markdown-renderer class="chat-content" :content="item.content" />
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -64,7 +64,7 @@
               </div>
               <div class="chat-left-content">
                 <p class="chat-time">{{ parseTime(item.createTime) }}</p>
-                <div class="chat-marked markdown-body" v-html="md.render(item.content)"></div>
+                <markdown-renderer class="chat-marked" :content="item.content" />
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -115,19 +115,7 @@ import {
 import { createVNode } from "vue"
 import { message, Modal } from "ant-design-vue"
 
-// import { Marked, Renderer } from "marked"
-// import { markedHighlight } from "marked-highlight"
-import "github-markdown-css/github-markdown.css"
-import hljs from "highlight.js"
-import "highlight.js/styles/atom-one-dark.css"
-// import 'highlight.js/styles/github.css'
-
-import MarkdownIt from "markdown-it"
-import mk from "markdown-it-katex"
-// import katex from "katex"
-import "katex/dist/katex.min.css"
-import markedKatexExtension from "marked-katex-extension"
-
+import MarkdownRenderer from "@/components/MarkdownRenderer"
 import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
 import axios from "axios"
@@ -141,33 +129,6 @@ let eventSource = null
 let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
-
-// 创建 markdown-it 实例并配置 KaTeX 插件
-const md = new MarkdownIt({
-  // html: true, // 允许 HTML 标签
-  linkify: true, // 自动转换 URL 为链接
-  // typographer: true // 优化排版
-  highlight: (str, lang) => {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return (
-          '<pre class="hljs"><code>' +
-          hljs.highlight(str, { language: lang }).value +
-          "</code></pre>"
-        )
-      } catch (err) {
-        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
-      }
-    }
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
-  }
-})
-
-// 使用 KaTeX 插件
-md.use(mk, {
-  throwOnError: false, // 公式错误时不抛出异常
-  errorColor: "#cc0000" // 错误公式显示颜色
-})
 
 const messageList = computed(() => store.getters.getMessageData)
 const conversationsList = computed(() => store.getters.getConversationsData)
@@ -466,6 +427,21 @@ function stopSpeech() {
 </script>
 
 <style scoped lang="stylus">
+/* 确保公式容器可见 */
+.katex-display {
+  display: block !important;
+  margin: 1em 0 !important;
+  padding: 1em !important;
+  background: #f8f9fa;
+  border-left: 4px solid #3498db;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.katex {
+  font-size: 1.1em !important;
+  padding: 0 0.2em;
+}
 .chat-container
   position absolute
   top 60px
@@ -576,11 +552,6 @@ function stopSpeech() {
           position relative
           margin-left 10px
           min-width 0 // 适应内容宽度
-          .chat-marked
-            padding 8px
-            border-radius 5px
-            font-size 14px
-            background #d5e6cd
         .chat-copy
           display none
           position absolute
@@ -605,6 +576,11 @@ function stopSpeech() {
       .chat-time
         margin-bottom 5px
         color #b4bbc4
+      .chat-marked
+        padding 8px
+        border-radius 5px
+        font-size 14px
+        background #d5e6cd
     .chat-bottom
       display flex
       align-items center

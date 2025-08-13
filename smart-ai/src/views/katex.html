@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>markdown-it + markdown-it-texmath + KaTeX Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/css/texmath.min.css">
+    <style>body{font-family: sans-serif; max-width:800px; margin:30px auto;}</style>
+</head>
+<body>
+<div id="out"></div>
+
+<!-- 加载顺序很重要：markdown-it -> katex -> texmath -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.0.0/dist/markdown-it.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js"></script>
+
+<script>
+    // 调试：确认全局对象是否存在
+    console.log('markdownit:', typeof markdownit); // 应该是 "function"
+    console.log('katex:', typeof katex);           // 应该是 "object" 或 "function"
+    console.log('texmath:', typeof texmath);       // **关键** 应该是 "function" 或 "object"（插件本体）
+
+    // 创建 markdown-it
+    const md = markdownit({ html: true, linkify: true, typographer: true });
+
+    // 使用插件（这里使用全局 texmath）
+    md.use(texmath, {
+        engine: katex,
+        delimiters: ["dollars", "brackets", "doxygen", "gitlab", "julia", "kramdown", "beg_end"],
+        katexOptions: { throwOnError: false, strict: false }
+    });
+
+    // 注意：在 JS 字符串中要用双反斜杠 \\ 来在运行时产生单个反斜杠
+    const raw = `
+内联公式示例：\\( x^2 + 1 \\)
+
+块级公式示例：
+
+\\[
+\\int_0^1 x^2 \\, dx
+\\]
+`;
+
+    // 渲染并插入页面
+    document.getElementById('out').innerHTML = md.render(raw);
+</script>
+</body>
+</html>

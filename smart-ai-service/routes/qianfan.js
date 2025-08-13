@@ -127,7 +127,7 @@ async function handleModelRequest(conversationId, userMessage, historyRecords, r
     const resp = await client.chat({
         messages: messages,
         stream: true,
-    }, "ernie-3.5-8k");
+    }, "deepseek-v3");
 
     let fullResponse = '';  // 用于存储完整的响应内容
     // 使用流式迭代将 chunk 内容逐步返回给前端
