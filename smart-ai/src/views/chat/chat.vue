@@ -142,18 +142,8 @@ onMounted(() => {
   store.commit("setSelectedConversationId", selectedConversationId.value)
   initScroll()
   initSpeech()
-  renderMath()
+  scrollToSelectedPosition()
 })
-
-function renderMath() {
-  nextTick(() => {
-    const mathEelements = document.querySelectorAll(".math")
-    mathEelements.forEach((element) => {
-      console.log(element)
-      katex.render(element.innerText, element)
-    })
-  })
-}
 
 function initConversationsList() {
   store.dispatch("getConversationsList")
@@ -196,6 +186,18 @@ function initSpeech() {
   } else {
     message.error("抱歉，你的浏览器不支持文字转语音功能")
   }
+}
+// 滚动到列表选中的位置
+function scrollToSelectedPosition() {
+  setTimeout(() => {
+    const targetElement = document.getElementsByClassName("selected")[0]
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth", // 平滑滚动
+        block: "start" // 将目标元素对齐到视口顶部
+      })
+    }
+  }, 100)
 }
 
 function handleKeyDown(event) {
@@ -427,21 +429,6 @@ function stopSpeech() {
 </script>
 
 <style scoped lang="stylus">
-/* 确保公式容器可见 */
-.katex-display {
-  display: block !important;
-  margin: 1em 0 !important;
-  padding: 1em !important;
-  background: #f8f9fa;
-  border-left: 4px solid #3498db;
-  border-radius: 8px;
-  overflow-x: auto;
-}
-
-.katex {
-  font-size: 1.1em !important;
-  padding: 0 0.2em;
-}
 .chat-container
   position absolute
   top 60px
