@@ -60,7 +60,7 @@ async function saveConversation(conversationId, userId, conversationName, messag
 
     try {
         const savedConversation = await newConversation.save();
-        console.log('Conversation saved:', savedConversation);
+        // console.log('Conversation saved:', savedConversation);
         return savedConversation; // 返回保存的记录
     } catch (error) {
         console.error('Error saving conversation:', error);
@@ -76,7 +76,7 @@ async function getUserConversations(userId) {
             .select('-messages')  // 排除 messages 字段
             .sort({ 'created_at': -1 });
 
-        console.log('User conversations:', conversations);
+        // console.log('User conversations:', conversations);
         return conversations; // 返回查询的对话记录
     } catch (error) {
         console.error('Error retrieving conversations:', error);
@@ -88,7 +88,7 @@ async function getUserConversations(userId) {
 async function getConversationById(conversationId) {
     try {
         const conversation = await Conversation.findOne({ conversation_id: conversationId });
-        console.log('Conversation history:', conversation);
+        // console.log('Conversation history:', conversation);
         return conversation; // 返回查询的对话记录
     } catch (error) {
         console.error('Error retrieving conversation:', error);
@@ -109,7 +109,7 @@ async function addMessageToConversation(conversationId, newMessage) {
             throw new Error('Conversation not found');
         }
 
-        console.log('Message added to conversation:', updatedConversation);
+        // console.log('Message added to conversation:', updatedConversation);
         return updatedConversation;
     } catch (error) {
         console.error('Error adding message to conversation:', error);

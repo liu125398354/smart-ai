@@ -260,7 +260,11 @@ async function sendMessage() {
     initScroll()
   }
   scrollBottom()
-
+  if (!response.ok) {
+    message.error("服务器出现问题，稍后再试")
+    sendDisabled.value = false
+    return
+  }
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let done = false
@@ -329,6 +333,7 @@ function selectConversation(id) {
 }
 
 function scrollBottom() {
+  console.log("2222", chatScroll.value)
   nextTick(() => {
     chatScroll.value.refresh()
     chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
