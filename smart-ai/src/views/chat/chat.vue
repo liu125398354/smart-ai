@@ -130,6 +130,9 @@ let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
 
+let controller = new AbortController()
+let signal = controller.signal
+
 const messageList = computed(() => store.getters.getMessageData)
 const conversationsList = computed(() => store.getters.getConversationsData)
 const selectedConversationId = computed(() => store.getters.getSelectedConversationId)
@@ -238,54 +241,62 @@ async function sendMessage() {
   // chatApi.sendQianFan(params, config).then((res) => {
   //   sendDisabled.value = false
   // })
-
-  const response = await fetch("/api/qianfan/getQianFanMessage", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json" // 明确指定 JSON 格式
-    },
-    body: JSON.stringify(params)
-  })
-
-  // 从响应头中提取新的 dialogId
-  const newDialogId = response.headers.get("X-Dialog-ID")
-  if (newDialogId) {
-    console.log("New dialog ID:", newDialogId)
-    params.conversationId = newDialogId
-    initConversationsList()
-    store.commit("setSelectedConversationId", newDialogId)
-  }
-  store.commit("addMessage", params)
-  if (!chatScroll.value) {
-    initScroll()
-  }
-  scrollBottom()
-  if (!response.ok) {
-    message.error("服务器出现问题，稍后再试")
-    sendDisabled.value = false
-    return
-  }
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  let done = false
-  let totalMessage = ""
-
-  while (!done) {
-    const { value, done: doneReading } = await reader.read()
-    done = doneReading
-    const chunk = decoder.decode(value, { stream: true })
-
-    // 这里将 chunk 直接输出，并累加
-    totalMessage += chunk
-    // 将内容逐步更新到页面
-    store.commit("updateMessage", {
-      conversationId: params.conversationId,
-      message: totalMessage
+  try {
+    const response = await fetch("/api/qianfan/getQianFanMessage", {
+      signal,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json" // 明确指定 JSON 格式
+      },
+      body: JSON.stringify(params)
     })
-    scrollBottom()
-  }
-  sendDisabled.value = false
 
+    // 从响应头中提取新的 dialogId
+    const newDialogId = response.headers.get("X-Dialog-ID")
+    if (newDialogId) {
+      console.log("New dialog ID:", newDialogId)
+      params.conversationId = newDialogId
+      initConversationsList()
+      store.commit("setSelectedConversationId", newDialogId)
+    }
+    store.commit("addMessage", params)
+    if (!chatScroll.value) {
+      initScroll()
+    }
+    scrollBottom()
+    // 处理大模型返回出错的问题
+    if (!response.ok) {
+      message.error("服务器出现问题，稍后再试")
+      sendDisabled.value = false
+      return
+    }
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let done = false
+    let totalMessage = ""
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read()
+      done = doneReading
+      const chunk = decoder.decode(value, { stream: true })
+
+      // 这里将 chunk 直接输出，并累加
+      totalMessage += chunk
+      // 将内容逐步更新到页面
+      store.commit("updateMessage", {
+        conversationId: params.conversationId,
+        message: totalMessage
+      })
+      scrollBottom()
+    }
+    sendDisabled.value = false
+  } catch (error) {
+    if (error.name === "AbortError") {
+      console.log("请求被终止")
+    } else {
+      console.log("发生了其他错误")
+    }
+  }
   // let aaa = ""
   // if (eventSource) {
   //   eventSource.close()
@@ -318,13 +329,15 @@ async function sendMessage() {
 }
 // 创建新对话
 function createConversation() {
+  cancelRequest()
   store.commit("setSelectedConversationId", null)
   // 每次开始新对话时，messageList数据都会清空，scroll就不会起作用，
   // 所以将scroll置空，以便接下来对话中可以不重复的重新初始化
   chatScroll.value = null
 }
-
+// 选择对话
 function selectConversation(id) {
+  cancelRequest()
   store.commit("setSelectedConversationId", id)
   if (!chatScroll.value) {
     initScroll()
@@ -332,8 +345,16 @@ function selectConversation(id) {
   scrollBottom()
 }
 
+// 当用户切换对话时取消请求
+function cancelRequest() {
+  controller.abort()
+  sendDisabled.value = false
+  // 这里要创建新的 controller 实例，获取新的 signal，否则下一个请求发不出去了
+  controller = new AbortController()
+  signal = controller.signal
+}
+
 function scrollBottom() {
-  console.log("2222", chatScroll.value)
   nextTick(() => {
     chatScroll.value.refresh()
     chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
