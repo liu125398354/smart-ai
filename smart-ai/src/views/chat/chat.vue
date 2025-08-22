@@ -129,6 +129,7 @@ let eventSource = null
 let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
+let currentName = ref("")
 
 let controller = new AbortController()
 let signal = controller.signal
@@ -395,6 +396,7 @@ function showDeleteConfirm(index, conversationId) {
 function editConversationName(index, item) {
   // 编辑对话名称时，需要将模式改为正在编辑的模式，且聚焦到当前的输入框，
   // 由于用ul li导致ref是一个数组，所以用nameInput.value[0]访问
+  currentName.value = item.conversationName
   isEdit.value = true
   nextTick(() => {
     nameInput.value[0].focus()
@@ -402,6 +404,17 @@ function editConversationName(index, item) {
 }
 
 function inputBlur(index, item) {
+  /**
+   * 此处需要单独特殊处理：
+   * 1、失焦过后，如果名称还是空的话，那就相当于默认没有做任何修改
+   * 2、原因：这里不能像按回车一样给出"请输入对话名称"的提示，因为无论是点击切换到其他对话而失的焦
+   * 还是点击到其他任何地方而失的焦，都不能让对话名称为空(否则页面看起来不符合用户需求)
+   * */
+  if (!item.conversationName.trim()) {
+    item.conversationName = currentName.value
+    isEdit.value = false
+    return
+  }
   // 点击回车过后，失焦事件就不执行了，否则调用两次修改接口
   if (isEnter.value) {
     isEnter.value = false
@@ -413,6 +426,11 @@ function inputBlur(index, item) {
 function inputEnter(index, item) {
   if (!item.conversationName.trim()) {
     message.warning("请输入对话名称")
+    return
+  }
+  // 对话名称没有任何修改，则取消编辑的状态并返回，且不用发起请求
+  if (item.conversationName === currentName.value) {
+    isEdit.value = false
     return
   }
   isEnter.value = true
