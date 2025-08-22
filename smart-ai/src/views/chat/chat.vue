@@ -374,16 +374,17 @@ function showDeleteConfirm(index, conversationId) {
         userId: userId.value,
         conversationId: conversationId
       }
-      chatApi.delConversations(params).then((res) => {
-        if (res.code === 0) {
-          store.commit("delConversationsData", index)
-          store.commit("delMessage", conversationId)
-          scrollBottom()
-          message.success(res.message)
-        } else {
-          message.error(res.message)
-        }
-      })
+      chatApi
+        .delConversations(params)
+        .then((res) => {
+          if (res.code === 0) {
+            store.commit("delConversationsData", index)
+            store.commit("delMessage", conversationId)
+            scrollBottom()
+            message.success(res.message)
+          }
+        })
+        .catch((error) => {})
     },
     onCancel() {
       console.log("Cancel")
@@ -410,6 +411,10 @@ function inputBlur(index, item) {
 }
 
 function inputEnter(index, item) {
+  if (!item.conversationName.trim()) {
+    message.warning("请输入对话名称")
+    return
+  }
   isEnter.value = true
   isEdit.value = false
   let params = {
@@ -417,13 +422,14 @@ function inputEnter(index, item) {
     conversationId: item.conversationId,
     newName: item.conversationName
   }
-  chatApi.modifyConversationName(params).then((res) => {
-    if (res.code === 0) {
-      message.success(res.message)
-    } else {
-      message.error(res.message)
-    }
-  })
+  chatApi
+    .modifyConversationName(params)
+    .then((res) => {
+      if (res.code === 0) {
+        message.success(res.message)
+      }
+    })
+    .catch((error) => {})
 }
 
 function copyText(text) {

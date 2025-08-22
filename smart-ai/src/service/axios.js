@@ -3,6 +3,7 @@
  */
 
 import axios from "axios"
+import { message } from "ant-design-vue"
 
 const service = axios.create({
   baseURL:
@@ -24,7 +25,7 @@ service.interceptors.request.use(
   },
   (error) => {
     // do something with request error
-    console.log(error) // for debug
+    console.log("request---", error) // for debug
     return Promise.reject(error)
   }
 )
@@ -46,6 +47,19 @@ service.interceptors.response.use(
     return res
   },
   (error) => {
+    const res = error.response
+    // 这里是全局错误提示处理
+    if (res) {
+      if (res.status === 401) {
+        message.error("未授权，请重新登录")
+      } else if (res.status === 400 || res.status === 500) {
+        message.error(res.data.message)
+      } else {
+        message.error("服务器错误，请稍后再试")
+      }
+    } else {
+      message.error("网络异常，请检查连接")
+    }
     return Promise.reject(error)
   }
 )
