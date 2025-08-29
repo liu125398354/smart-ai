@@ -118,8 +118,10 @@ const chat = {
       try {
         const response = await chatApi.getConversations({ userId: rootState.user.userId })
         commit("setConversationsData", response) // 请求成功后将数据存储到state中
+        return Promise.resolve(response)
       } catch (error) {
         commit("setError", error) // 请求失败时处理错误
+        return Promise.reject(error)
       } finally {
       }
     }

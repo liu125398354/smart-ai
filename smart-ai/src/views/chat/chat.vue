@@ -139,18 +139,22 @@ const conversationsList = computed(() => store.getters.getConversationsData)
 const selectedConversationId = computed(() => store.getters.getSelectedConversationId)
 const userId = computed(() => store.getters.getUserId)
 
-onMounted(() => {
+onMounted(async () => {
   store.commit("setUserId")
   store.commit("setMessage")
-  initConversationsList()
-  store.commit("setSelectedConversationId", selectedConversationId.value)
+  try {
+    await initConversationsList()
+    store.commit("setSelectedConversationId", selectedConversationId.value)
+    scrollToSelectedPosition() // 数据列表加载选中后，再滚动
+  } catch (error) {
+    console.error("加载列表失败:", error)
+  }
   initScroll()
   initSpeech()
-  scrollToSelectedPosition()
 })
 
 function initConversationsList() {
-  store.dispatch("getConversationsList")
+  return store.dispatch("getConversationsList")
 }
 
 function initScroll() {
