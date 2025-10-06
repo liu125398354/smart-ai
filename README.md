@@ -23,6 +23,62 @@ chatgpt5等一系列版本出来后，就想着把每一处的细节补充一下
 
 ##目录结构
 
+```markdown
+smart-app
+├── smart-ai   # 前端项目
+│   ├── public   # 静态资源
+│   ├── src   # 源代码
+│   │   ├── api   # 接口请求
+│   │   │   ├── chat.js
+│   │   │   └── drawing.js
+│   │   ├── assets   # 前端资源文件
+│   │   ├── components   # 公共组件
+│   │   │   ├── AiChart.vue
+│   │   │   ├── EChart.vue
+│   │   │   └── MarkdownRenderer.vue
+│   │   ├── layouts   # 布局文件
+│   │   │   └── index.vue
+│   │   ├── router   # 路由
+│   │   │   └── index.js
+│   │   ├── service   # 封装的服务
+│   │   │   └── axios.js
+│   │   ├── store   # 状态管理
+│   │   ├── utils   # 工具函数
+│   │   ├── views   # 页面视图
+│   │   │   ├── charts   # 图表页面
+│   │   │   │   └── charts.vue
+│   │   │   ├── chat   # 聊天页面
+│   │   │   │   └── chat.vue
+│   │   │   ├── drawing   # 绘图页面
+│   │   │   │   └── drawing.vue
+│   │   │   ├── EventSource.html
+│   │   │   └── katex.html
+│   │   ├── App.vue   # 主组件
+│   │   └── main.js   # 入口文件
+│   ├── babel.config.js   # Babel 配置
+│   ├── jsconfig.json   # JS/TS 配置
+│   ├── package-lock.json
+│   ├── package.json   # 前端配置
+│   └── vue.config.js   # Vue CLI 配置
+├── smart-ai-service   # 后端项目
+│   ├── bin   # 可执行文件
+│   ├── public   # 静态资源
+│   ├── routes   # 路由文件
+│   │   ├── chat.js
+│   │   ├── db.js
+│   │   ├── drawing.js
+│   │   └── qianfan.js
+│   ├── views   # 页面视图
+│   ├── app.js   # 后端入口
+│   ├── nodemon.json   # nodemon 配置
+│   ├── package-lock.json
+│   └── package.json   # 后端配置
+├── package-lock.json
+├── package.json   # 公共配置文件
+└── README.md
+```
+
+
 smart-app/
 
 ├── package.json        # 公共配置文件
