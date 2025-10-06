@@ -158,12 +158,19 @@ function makePicture() {
 
 <style scoped lang="stylus">
 .drawing-wrapper
+  position absolute
+  top 60px
+  bottom 15px
+  left 15px
+  right 15px
+  overflow hidden
   display flex
-  padding 16px 24px
-  background #ededf8
+  border 1px solid #ccc
+  border-radius 5px
   .drawing-left
     flex 1
     min-width 290px
+    overflow-y auto
     padding 12px
     background #fff
     .prompt
@@ -184,12 +191,20 @@ function makePicture() {
       &:hover
         background #69c03e
   .drawing-right
+    position relative
     flex 2
     display flex
     flex-direction column
-    margin-left 10px
     padding 10px
     background #fff
+    &::after
+      content ""
+      position absolute
+      top 0
+      left 0
+      bottom 0
+      width 1px
+      background #efeff5
     .progress
       text-align center
       color #949292
