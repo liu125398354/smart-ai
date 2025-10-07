@@ -1,4 +1,4 @@
-# smart-app应用
+# smart-ai应用
 
   - [项目简介](#项目简介)
   - [目录结构](#目录结构)
@@ -24,8 +24,8 @@ chatgpt5等一系列版本出来后，就想着把每一处的细节补充一下
 ## 目录结构
 
 ```markdown
-smart-app
-├── smart-ai   # 前端项目
+smart-ai
+├── smart-ai-web   # 前端项目
 │   ├── public   # 静态资源
 │   ├── src   # 源代码
 │   │   ├── api   # 接口请求
