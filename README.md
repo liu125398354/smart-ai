@@ -78,19 +78,6 @@ smart-app
 └── README.md
 ```
 
-
-smart-app/
-
-├── package.json        # 公共配置文件
-
-├── smart-ai-service/   # 后端项目
-
-│ ├── package.json     # 后端配置
-
-├── smart-ai/           # 前端项目
-
-│ ├── package.json     # 前端配置
-
 ## 依赖要求
 
 - Node.js v16.x 或更高版本
