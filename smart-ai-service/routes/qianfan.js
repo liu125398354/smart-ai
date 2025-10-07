@@ -21,6 +21,7 @@ const client = new  ChatCompletion({
     // appid: 'XXX'
 });
 
+
 /* 获取千帆大模型消息 */
 router.post('/getQianFanMessage', async function (req, res, next) {
 
