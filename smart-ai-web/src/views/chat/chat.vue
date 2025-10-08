@@ -51,7 +51,7 @@
               </div>
               <div class="chat-right-content">
                 <p class="chat-time chat-right-time">{{ parseTime(item.createTime) }}</p>
-                <markdown-renderer class="chat-content" :content="item.content" />
+                <mermaid-renderer class="chat-content" :content="item.content" />
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -64,7 +64,7 @@
               </div>
               <div class="chat-left-content">
                 <p class="chat-time">{{ parseTime(item.createTime) }}</p>
-                <markdown-renderer class="chat-marked" :content="item.content" />
+                <mermaid-renderer class="chat-marked" :content="item.content" />
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -115,7 +115,8 @@ import {
 import { createVNode } from "vue"
 import { message, Modal } from "ant-design-vue"
 
-import MarkdownRenderer from "@/components/MarkdownRenderer"
+// import MarkdownRenderer from "@/components/MarkdownRenderer"
+import MermaidRenderer from "@/components/MermaidRenderer"
 import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
 import axios from "axios"
