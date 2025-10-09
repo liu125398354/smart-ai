@@ -36,7 +36,8 @@ smart-ai
 │   │   ├── components   # 公共组件
 │   │   │   ├── AiChart.vue
 │   │   │   ├── EChart.vue
-│   │   │   └── MarkdownRenderer.vue
+│   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
+│   │   │   └── MermaidRenderer.vue   # 集成bytemd的组件
 │   │   ├── layouts   # 布局文件
 │   │   │   └── index.vue
 │   │   ├── router   # 路由
