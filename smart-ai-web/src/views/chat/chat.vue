@@ -131,6 +131,9 @@ let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
 let currentName = ref("")
+let lastHeight = ref(0) // 记录滚动视口高度
+let lastScrollTime = ref(0) // 记录时间
+const throttleInterval = ref(200) // 每 50ms 最多执行一次
 
 let controller = new AbortController()
 let signal = controller.signal
@@ -183,8 +186,9 @@ function initScroll() {
       mouseWheel: true
       // eventPassthrough: "vertical"
     })
-    chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
-    chatScroll.value.refresh()
+    // chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
+    // chatScroll.value.refresh()
+    scrollBottom()
   })
 }
 
@@ -269,7 +273,7 @@ async function sendMessage() {
     if (!chatScroll.value) {
       initScroll()
     }
-    scrollBottom()
+    scrollToBottomThrottle()
     // 处理大模型返回出错的问题
     if (!response.ok) {
       message.error("服务器出现问题，稍后再试")
@@ -293,14 +297,14 @@ async function sendMessage() {
         conversationId: params.conversationId,
         message: totalMessage
       })
-      scrollBottom()
+      scrollToBottomThrottle()
     }
     sendDisabled.value = false
   } catch (error) {
     if (error.name === "AbortError") {
       console.log("请求被终止")
     } else {
-      console.log("发生了其他错误")
+      console.log("发生了其他错误", error)
     }
   }
   // let aaa = ""
@@ -360,10 +364,31 @@ function cancelRequest() {
   signal = controller.signal
 }
 
+// 节流限制滚动刷新频率
+function scrollToBottomThrottle() {
+  const now = Date.now()
+  if (now - lastScrollTime.value >= throttleInterval.value) {
+    lastScrollTime.value = now
+    // 执行刷新和滚动操作
+    nextTick(() => {
+      chatScroll.value.refresh()
+      chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
+    })
+  }
+}
+
+// 轮询计算高度，直到高度不再变化时，才去滚动到最底部
 function scrollBottom() {
   nextTick(() => {
-    chatScroll.value.refresh()
-    chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
+    const content = document.querySelector(".chat-wrapper")
+    const height = content.scrollHeight
+    if (height !== lastHeight.value) {
+      lastHeight.value = height
+      setTimeout(scrollBottom, 50)
+    } else {
+      chatScroll.value.refresh()
+      chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
+    }
   })
 }
 
