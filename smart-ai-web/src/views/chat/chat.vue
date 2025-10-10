@@ -134,6 +134,7 @@ let currentName = ref("")
 let lastHeight = ref(0) // 记录滚动视口高度
 let lastScrollTime = ref(0) // 记录时间
 const throttleInterval = ref(200) // 每 50ms 最多执行一次
+let debounceTimer = ref(null) // 防抖
 
 let controller = new AbortController()
 let signal = controller.signal
@@ -364,8 +365,9 @@ function cancelRequest() {
   signal = controller.signal
 }
 
-// 节流限制滚动刷新频率
+// 防抖 + 节流
 function scrollToBottomThrottle() {
+  // 节流部分：消息不断到达时，每隔 50ms 节流刷新一次滚动，保持实时跟随
   const now = Date.now()
   if (now - lastScrollTime.value >= throttleInterval.value) {
     lastScrollTime.value = now
@@ -375,6 +377,15 @@ function scrollToBottomThrottle() {
       chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
     })
   }
+
+  // 防抖部分：消息停止后，300ms 内无新消息 → 防抖触发最后一次滚动，确保滚到最底
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => {
+    nextTick(() => {
+      chatScroll.value.refresh()
+      chatScroll.value.scrollTo(0, chatScroll.value.maxScrollY)
+    })
+  }, 300) // 消息流停止 300ms 后再执行
 }
 
 // 轮询计算高度，直到高度不再变化时，才去滚动到最底部

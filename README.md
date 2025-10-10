@@ -97,7 +97,7 @@ smart-ai
       npm run install
    ```
 
-   该命令将分别在 smart-ai-service（后端）和 smart-ai（前端）目录中安装依赖。
+   该命令将分别在 smart-ai-service（后端）和 smart-ai-web（前端）目录中安装依赖。
 
 2. 启动应用
    要同时启动后端和前端，可以运行以下命令：
@@ -109,7 +109,7 @@ smart-ai
 
    启动 smart-ai-service 目录中的后端服务。
    等待后端准备好（监听 3000 端口）。
-   一旦后端准备好，启动 smart-ai 目录中的前端服务。
+   一旦后端准备好，启动 smart-ai-web 目录中的前端服务。
    使用 concurrently 工具并行运行这两个进程，后端日志以蓝色显示，前端日志以绿色显示。
 
 3. 自定义前端启动（不等待后端）
