@@ -1,7 +1,7 @@
 // v-ellipsis-title.js
 export default {
   mounted(el) {
-    // 核心判断文字是否溢出
+    // 核心判断函数
     const checkOverflow = () => {
       if (el.scrollWidth > el.clientWidth) {
         el.setAttribute("title", el.textContent.trim())
@@ -10,35 +10,48 @@ export default {
       }
     }
 
-    // 1️⃣ 用 IntersectionObserver 懒判断（只在元素进入视口时触发）
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
+    // 标记是否已通过 IntersectionObserver 判断过
+    el._overflowChecked = false
+
+    // 1️⃣ IntersectionObserver：首次进入视口时判断
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !el._overflowChecked) {
+          console.log("zoule----")
           checkOverflow()
+          el._overflowChecked = true
+          io.unobserve(el) // 解绑，之后不再触发
         }
       })
     })
     io.observe(el)
     el._io = io
 
-    // 2️⃣ 监听自身元素尺寸变化或父容器变化，保持响应式
-    const resizeObserver = new ResizeObserver(checkOverflow)
+    // 2️⃣ ResizeObserver：监听元素自身尺寸变化
+    const resizeObserver = new ResizeObserver(() => {
+      checkOverflow()
+    })
     resizeObserver.observe(el)
     el._observer = resizeObserver
   },
 
   updated(el) {
-    // 内容变化时重新判断
-    if (el.scrollWidth > el.clientWidth) {
-      el.setAttribute("title", el.textContent.trim())
-    } else {
-      el.removeAttribute("title")
-    }
+    // 文字内容更新时仍然重新判断
+    checkOverflow(el)
   },
 
   unmounted(el) {
-    // 清理观察器
+    // 清理所有观察器
     el._observer?.disconnect()
     el._io?.disconnect()
+  }
+}
+
+// 独立函数，便于 updated 使用
+function checkOverflow(el) {
+  if (el.scrollWidth > el.clientWidth) {
+    el.setAttribute("title", el.textContent.trim())
+  } else {
+    el.removeAttribute("title")
   }
 }
