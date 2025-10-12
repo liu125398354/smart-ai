@@ -13,7 +13,11 @@
           @click="selectConversation(item.conversationId)"
         >
           <MessageOutlined />
-          <div v-if="item.conversationId !== selectedConversationId || !isEdit" class="part-text">
+          <div
+            v-if="item.conversationId !== selectedConversationId || !isEdit"
+            class="part-text"
+            v-ellipsis-title
+          >
             {{ item.conversationName }}
           </div>
           <a-input

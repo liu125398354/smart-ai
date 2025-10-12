@@ -6,4 +6,7 @@ import store from "./store"
 import Antd from "ant-design-vue"
 import "./assets/css/reset.styl"
 
-createApp(App).use(Antd).use(store).use(router).mount("#app")
+import ellipsisTitle from "@/directives/v-ellipsis-title.js"
+const app = createApp(App)
+app.directive("ellipsis-title", ellipsisTitle)
+app.use(Antd).use(store).use(router).mount("#app")
