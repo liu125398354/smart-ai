@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onDeactivated, defineExpose, defineProps, watch, nextTick } from "vue"
+import { ref, onMounted, onDeactivated, watch, nextTick } from "vue"
 import * as echarts from "echarts"
 const cheerio = require("cheerio")
 

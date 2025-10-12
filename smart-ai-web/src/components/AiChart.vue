@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, defineProps } from "vue"
+import { ref, onMounted, nextTick } from "vue"
 import * as echarts from "echarts"
 
 let $props = defineProps({
