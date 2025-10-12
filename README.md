@@ -38,6 +38,8 @@ smart-ai
 │   │   │   ├── EChart.vue
 │   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
 │   │   │   └── MermaidRenderer.vue   # 集成bytemd的组件
+│   │   ├── directives # 自定义指令
+│   │   │   └── v-ellipsis-title.js
 │   │   ├── layouts   # 布局文件
 │   │   │   └── index.vue
 │   │   ├── router   # 路由
