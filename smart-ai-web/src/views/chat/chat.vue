@@ -154,7 +154,8 @@ onMounted(async () => {
   try {
     await initConversationsList()
     store.commit("setSelectedConversationId", selectedConversationId.value)
-    scrollToSelectedPosition() // 数据列表加载选中后，再滚动
+    await scrollToSelectedPosition() // 数据列表加载选中后，再滚动
+    store.commit("setEnableEllipsisObserver", true) // 设置初始化是否滚动完成的标志
   } catch (error) {
     console.error("加载列表失败:", error)
   }
@@ -205,17 +206,24 @@ function initSpeech() {
     message.error("抱歉，你的浏览器不支持文字转语音功能")
   }
 }
+
 // 滚动到列表选中的位置
 function scrollToSelectedPosition() {
-  setTimeout(() => {
-    const targetElement = document.getElementsByClassName("selected")[0]
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth", // 平滑滚动
-        block: "start" // 将目标元素对齐到视口顶部
-      })
-    }
-  }, 100)
+  return new Promise((resolve) => {
+    // 等待 DOM 渲染完成（例如 v-for 的 li 全部出来）
+    setTimeout(() => {
+      const target = document.querySelector(".selected")
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth", // 平滑滚动
+          block: "start" // 将目标元素对齐到视口顶部
+        })
+      }
+      // 平滑滚动是异步动画，这里延迟一点点等待动画结束
+      // 包含缓冲时间，确保滚动完全稳定
+      setTimeout(resolve, 500)
+    }, 100)
+  })
 }
 
 function handleKeyDown(event) {

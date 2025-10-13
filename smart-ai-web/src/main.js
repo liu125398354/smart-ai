@@ -8,5 +8,6 @@ import "./assets/css/reset.styl"
 
 import ellipsisTitle from "@/directives/v-ellipsis-title.js"
 const app = createApp(App)
-app.directive("ellipsis-title", ellipsisTitle)
 app.use(Antd).use(store).use(router).mount("#app")
+
+app.directive("ellipsis-title", ellipsisTitle)

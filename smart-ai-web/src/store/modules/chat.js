@@ -1,5 +1,5 @@
 /**
- * Created by liunannan on 2021/08/16.
+ * Created by liunannan on 2023/08/16.
  */
 import { saveToLocal, getFromLocal } from "@/utils"
 import chatApi from "@/api/chat"
