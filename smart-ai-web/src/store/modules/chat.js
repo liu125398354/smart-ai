@@ -77,6 +77,21 @@ const chat = {
       }
       saveToLocal("chatMessage", state.messageList)
     },
+    convertLastAssistantToChart(state, params) {
+      const { conversationId, chartPayload } = params
+      const index = state.messageList.findIndex((item) => item.conversationId === conversationId)
+      if (index === -1) return
+      const messages = state.messageList[index].messages
+      const lastIndex = messages.length - 1
+      if (lastIndex < 0) return
+      const last = messages[lastIndex]
+      if (last.role === "assistant") {
+        last.chartPayload = chartPayload
+        last.content = "" // 由渲染器负责显示
+        last.createTime = new Date().getTime()
+        saveToLocal("chatMessage", state.messageList)
+      }
+    },
     updateChartsMessage(state, params) {
       const { uuid, message, flag } = params
 

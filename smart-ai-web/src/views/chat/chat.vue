@@ -43,6 +43,12 @@
       </ul>
     </div>
     <div class="chat-record">
+      <div class="chat-agent">
+        <a-button type="default" @click="toggleChartAgent">{{
+          showChartAgent ? "关闭图表智能体" : "开启图表智能体"
+        }}</a-button>
+        <span v-if="showChartAgent" style="color: #999">已开启：直接用自然语言描述要画的图表</span>
+      </div>
       <div v-if="messageList.length === 0" class="no-message">
         你好，我是chatgpt，很高兴见到你！
       </div>
@@ -68,7 +74,17 @@
               </div>
               <div class="chat-left-content">
                 <p class="chat-time">{{ parseTime(item.createTime) }}</p>
-                <mermaid-renderer class="chat-marked" :content="item.content" />
+                <template v-if="item.chartPayload">
+                  <chart-renderer
+                    :type="item.chartPayload.type"
+                    :options="item.chartPayload.options"
+                    height="520px"
+                    :initialWidth="720"
+                  />
+                </template>
+                <template v-else>
+                  <mermaid-renderer class="chat-marked" :content="item.content" />
+                </template>
                 <div class="chat-copy">
                   <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
@@ -121,6 +137,7 @@ import { message, Modal } from "ant-design-vue"
 
 // import MarkdownRenderer from "@/components/MarkdownRenderer"
 import MermaidRenderer from "@/components/MermaidRenderer"
+import ChartRenderer from "@/components/ChartRenderer.vue"
 import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
 import axios from "axios"
@@ -130,6 +147,7 @@ const chatScroll = ref(null)
 const text = ref("")
 const sendDisabled = ref(false)
 const synthesis = ref(null)
+const showChartAgent = ref(false)
 let eventSource = null
 let isEdit = ref(false)
 let isEnter = ref(false)
@@ -198,6 +216,10 @@ function initScroll() {
   })
 }
 
+function toggleChartAgent() {
+  showChartAgent.value = !showChartAgent.value
+}
+
 function initSpeech() {
   if ("speechSynthesis" in window) {
     synthesis.value = new SpeechSynthesisUtterance()
@@ -205,6 +227,42 @@ function initSpeech() {
   } else {
     message.error("抱歉，你的浏览器不支持文字转语音功能")
   }
+}
+
+// 尝试从包含多余文本的字符串中提取第一个合法的 JSON 对象（需包含 type 与 options）
+function extractChartJson(text) {
+  if (!text) return null
+  // 去掉 ```json/``` 包裹
+  let s = text.trim()
+  if (s.startsWith("```") && s.endsWith("```")) {
+    s = s.replace(/^```[a-zA-Z]*\n?/, "").replace(/```$/, "")
+  }
+  // 快速命中：整个就是 JSON
+  try {
+    const obj = JSON.parse(s)
+    if (obj && obj.type && obj.options) return obj
+  } catch (e) {}
+  // 正则扫描第一个大括号对象片段
+  const candidates = []
+  const stack = []
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (ch === "{") stack.push(i)
+    else if (ch === "}" && stack.length) {
+      const start = stack.pop()
+      if (stack.length === 0) {
+        candidates.push(s.substring(start, i + 1))
+        if (candidates.length >= 3) break // 最多尝试前三个
+      }
+    }
+  }
+  for (const part of candidates) {
+    try {
+      const obj = JSON.parse(part)
+      if (obj && obj.type && obj.options) return obj
+    } catch (e) {}
+  }
+  return null
 }
 
 // 滚动到列表选中的位置
@@ -249,6 +307,10 @@ async function sendMessage() {
     role: "user",
     content: text.value,
     createTime: new Date().getTime()
+  }
+  // 开启图表智能体则传标志，让后端切换到图表模式
+  if (showChartAgent.value) {
+    params.chartAgent = true
   }
   text.value = ""
   // let config = {
@@ -311,6 +373,28 @@ async function sendMessage() {
         message: totalMessage
       })
       scrollToBottomThrottle()
+    }
+    // 如果是图表智能体，尝试解析模型的最终 JSON，并把最后一条 AI 文本替换为图表渲染
+    if (showChartAgent.value) {
+      try {
+        const payload = extractChartJson(totalMessage)
+        if (payload && payload.type && payload.options) {
+          store.commit("convertLastAssistantToChart", {
+            conversationId: params.conversationId,
+            chartPayload: payload
+          })
+          // 等消息节点渲染后，触发一次全局 resize，保证 ECharts 以正确宽度渲染
+          nextTick(() => {
+            requestAnimationFrame(() => {
+              try {
+                window.dispatchEvent(new Event("resize"))
+              } catch (e) {}
+            })
+          })
+        }
+      } catch (e) {
+        console.warn("未能解析为图表配置，将保留文本输出", e)
+      }
     }
     sendDisabled.value = false
   } catch (error) {
@@ -593,6 +677,12 @@ function stopSpeech() {
     flex-direction column
     overflow hidden // 必须设置聊天内容才能随窗口自适应
     //min-width 0
+    .chat-agent
+      padding 10px
+      border-bottom 1px solid #efeff5
+      display flex
+      gap 10px
+      align-items center
     .no-message
       flex 1
       display flex
@@ -642,6 +732,7 @@ function stopSpeech() {
           position relative
           margin-left 10px
           min-width 0 // 适应内容宽度
+          flex 1
         .chat-copy
           display none
           position absolute

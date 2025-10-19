@@ -3,6 +3,7 @@ var router = express.Router();
 const axios = require('axios-https-proxy-fix')
 const { v4: uuidv4 } = require('uuid');
 
+require('dotenv').config(); // ✅ 加载 .env 文件
 const { ChatCompletion } = require("@baiducloud/qianfan");
 const { setEnvVariable } = require("@baiducloud/qianfan");
 
@@ -13,8 +14,9 @@ const { saveConversation, getUserConversations, getConversationById,
  * 安全认证Access Key替换your_iam_ak，Secret Key替换your_iam_sk，
  * 如何获取请查看https://cloud.baidu.com/doc/Reference/s/9jwvz2egb
  * */
-setEnvVariable('QIANFAN_ACCESS_KEY','');
-setEnvVariable('QIANFAN_SECRET_KEY','');
+// 从环境变量安全注入 AK/SK
+setEnvVariable('QIANFAN_ACCESS_KEY', process.env.QIANFAN_ACCESS_KEY);
+setEnvVariable('QIANFAN_SECRET_KEY', process.env.QIANFAN_SECRET_KEY);
 
 const client = new  ChatCompletion({
     version: 'v2',
@@ -28,6 +30,7 @@ router.post('/getQianFanMessage', async function (req, res, next) {
     try {
         const userMessage = req.body.content;
         const userId = req.body.userId;
+        const chartAgent = !!req.body.chartAgent; // 是否开启图表智能体
         let conversationId = req.body.conversationId;  // 从请求体中获取 conversationId
 
         let historyRecords = [];
@@ -53,7 +56,7 @@ router.post('/getQianFanMessage', async function (req, res, next) {
 
             // 继续处理大模型请求
             historyRecords = {}; // 新对话初始化为空
-            await handleModelRequest(conversationId, userMessage, historyRecords, res);
+            await handleModelRequest(conversationId, userMessage, historyRecords, res, chartAgent);
 
         } else {
             // 保存模型的响应到历史记录
@@ -66,7 +69,7 @@ router.post('/getQianFanMessage', async function (req, res, next) {
             historyRecords = await getConversationById(conversationId);
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Transfer-Encoding', 'chunked');
-            await handleModelRequest(conversationId, userMessage, historyRecords, res);
+            await handleModelRequest(conversationId, userMessage, historyRecords, res, chartAgent);
         }
 
     } catch (error) {
@@ -77,7 +80,7 @@ router.post('/getQianFanMessage', async function (req, res, next) {
 });
 
 // 处理向大模型发送请求
-async function handleModelRequest(conversationId, userMessage, historyRecords, res) {
+async function handleModelRequest(conversationId, userMessage, historyRecords, res, chartAgent) {
     try {
         /**
          * EventSource方式返回数据流
@@ -128,6 +131,13 @@ async function handleModelRequest(conversationId, userMessage, historyRecords, r
         /**
          * 普通文字返回数据流
          * */
+        if (chartAgent) {
+            messages.unshift({
+                role: 'system',
+                content: '你具备两种能力：\n1) 图表专家：当且仅当用户的意图明确与“绘图/图表可视化”有关时，请直接输出 ECharts 配置的 JSON（不要包含任何解释或代码块标记），结构为 {type:"line|bar|pie|radar|scatter|heatmap|funnel|candlestick|gauge|tree|treemap|sunburst|sankey|graph|map|...", options:{...}}，尽可能给出完整的 ECharts 配置（含 xAxis/yAxis/legend/tooltip/series 等）。若为 3D 图（bar3D/scatter3D/surface 等），同样输出完整 options。\n2) 普通助理：如果用户的意图并非绘图相关，就按正常对话方式直接用自然语言回答。\n注意：不要返回“无法生成图表配置”之类的提示。当无法判定为绘图意图时，请给出正常的文字回答。'
+            })
+        }
+
         const resp = await client.chat({
             messages: messages,
             stream: true,
