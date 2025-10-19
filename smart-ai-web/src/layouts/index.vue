@@ -24,12 +24,6 @@ const items = ref([
     icon: () => h(EditOutlined),
     label: "AI 绘画",
     title: "AI 绘画"
-  },
-  {
-    key: "charts",
-    icon: () => h(BarChartOutlined),
-    label: "AI 图表",
-    title: "AI 图表"
   }
 ])
 const router = useRouter()

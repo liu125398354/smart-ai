@@ -34,8 +34,7 @@ smart-ai
 │   │   │   └── drawing.js
 │   │   ├── assets   # 前端资源文件
 │   │   ├── components   # 公共组件
-│   │   │   ├── AiChart.vue
-│   │   │   ├── EChart.vue
+│   │   │   ├── ChartRenderer.vue
 │   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
 │   │   │   └── MermaidRenderer.vue   # 集成bytemd的组件
 │   │   ├── directives # 自定义指令
@@ -49,8 +48,6 @@ smart-ai
 │   │   ├── store   # 状态管理
 │   │   ├── utils   # 工具函数
 │   │   ├── views   # 页面视图
-│   │   │   ├── charts   # 图表页面
-│   │   │   │   └── charts.vue
 │   │   │   ├── chat   # 聊天页面
 │   │   │   │   └── chat.vue
 │   │   │   ├── drawing   # 绘图页面

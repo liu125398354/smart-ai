@@ -28,18 +28,6 @@ const routes = [
         component: () => import(/* webpackChunkName: "about" */ "../views/drawing/drawing")
       }
     ]
-  },
-  {
-    path: "/",
-    component: Layout,
-    name: "",
-    children: [
-      {
-        path: "charts",
-        name: "charts",
-        component: () => import(/* webpackChunkName: "about" */ "../views/charts/charts")
-      }
-    ]
   }
 ]
 
