@@ -1,9 +1,9 @@
 <template>
-  <div ref="root" :style="{ width: widthPx + 'px', height, display: 'block' }"></div>
+  <div ref="root" :style="{ width: '100%', height }"></div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue"
 import * as echarts from "echarts"
 
 let $props = defineProps({
@@ -20,10 +20,6 @@ let $props = defineProps({
   height: {
     type: String,
     default: "480px"
-  },
-  initialWidth: {
-    type: Number,
-    default: 600 // 像素：当容器初始宽度为 0 时用于 ECharts 初始化的临时宽度
   }
 })
 
@@ -34,17 +30,7 @@ let resizeObserver = null
 let echartsGLLoaded = false
 let registeredMapNames = new Set()
 
-function ensureInstance(tempWidth) {
-  if (!instance && root.value) {
-    const initOpts =
-      typeof tempWidth === "number" && tempWidth > 0 ? { width: tempWidth } : undefined
-    instance = echarts.init(root.value, undefined, initOpts)
-    window.addEventListener("resize", handleResize)
-  }
-}
-
 function handleResize() {
-  measureWidth()
   if (instance) instance.resize()
 }
 
@@ -318,15 +304,8 @@ async function maybeLoadEchartsGL(option) {
 }
 
 async function render() {
-  const el = root.value
-  if (!el) return
-  // 若容器尚未有宽度（例如在折叠/隐藏或刚插入 DOM 时），使用初始宽度先初始化
-  if (!el.clientWidth) {
-    // 先用 initialWidth 初始化，随后再按真实宽度自适应
-    ensureInstance($props.initialWidth)
-  } else {
-    ensureInstance()
-  }
+  instance = echarts.init(root.value)
+  window.addEventListener("resize", handleResize)
   if (!instance) return
   try {
     const option = getOptionByType()
@@ -411,26 +390,8 @@ async function ensureMapRegistered(option) {
   }
 }
 
-watch(
-  () => [$props.type, $props.options],
-  () => nextTick(render),
-  { deep: true }
-)
-
 onMounted(() => {
-  // 延迟到布局稳定后再渲染，避免初始宽度不正确
-  nextTick(() => {
-    measureWidth()
-    requestAnimationFrame(() => render())
-  })
-  // 监听容器尺寸变化，保持 ECharts 对宽度变化的响应
-  if ("ResizeObserver" in window) {
-    resizeObserver = new ResizeObserver(() => {
-      measureWidth()
-      if (instance) instance.resize()
-    })
-    if (root.value) resizeObserver.observe(root.value)
-  }
+  render()
 })
 
 onBeforeUnmount(() => {
@@ -446,15 +407,6 @@ onBeforeUnmount(() => {
     resizeObserver = null
   }
 })
-
-function measureWidth() {
-  const el = root.value
-  if (!el) return
-  const parent = el.parentElement
-  const w = parent && parent.clientWidth ? parent.clientWidth : el.clientWidth
-  // 最小 320px，防止过窄
-  widthPx.value = Math.max(320, w || $props.initialWidth)
-}
 </script>
 
 <style scoped lang="stylus"></style>

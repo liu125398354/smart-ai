@@ -24,6 +24,7 @@
     "core-js": "^3.8.3",
     "dompurify": "^3.2.6",
     "echarts": "^5.4.3",
+    "echarts-gl": "^2.0.9",
     "github-markdown-css": "^5.8.1",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.23",
