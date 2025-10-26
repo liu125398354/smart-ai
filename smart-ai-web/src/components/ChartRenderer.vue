@@ -3,19 +3,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue"
+import { ref, onMounted, onBeforeUnmount, watch } from "vue"
 import * as echarts from "echarts"
+import "echarts-gl" // ✅ 一次性导入 echarts-gl，支持所有 3D 能力
 
-let $props = defineProps({
+const props = defineProps({
   type: {
     type: String,
-    default: "line" // 折线图 | 柱状图 | 饼图 | 雷达图
+    default: "line"
   },
   options: {
     type: Object,
-    default() {
-      return {}
-    }
+    default: () => ({})
   },
   height: {
     type: String,
@@ -24,177 +23,173 @@ let $props = defineProps({
 })
 
 const root = ref(null)
-const widthPx = ref(600)
 let instance = null
-let resizeObserver = null
-let echartsGLLoaded = false
-let registeredMapNames = new Set()
+const registeredMapNames = new Set()
 
+/** 自动 resize */
 function handleResize() {
-  if (instance) instance.resize()
+  instance?.resize()
 }
 
-function getOptionByType() {
-  const t = ($props.type || "line").toLowerCase()
-  const opt = $props.options || {}
+/** 判断是否是完整配置 */
+function isFullOption(opt) {
+  if (!opt || typeof opt !== "object") return false
+  if (Array.isArray(opt.series) && opt.series.length) return true
+  if (opt.xAxis || opt.yAxis || opt.geo || opt.grid3D) return true
+  return false
+}
 
-  // 如果模型返回的是完整的 ECharts 配置（包含 series/xAxis/radar 等），则直接使用
-  const isFullOption = () => {
-    if (!opt || typeof opt !== "object") return false
-    if (Array.isArray(opt.series) && opt.series.length) return true
-    if (opt.xAxis || opt.yAxis || opt.radar || opt.legend || opt.dataset) return true
-    return false
+/** 根据类型生成合理的默认配置（自动兜底） */
+function getOptionByType() {
+  const t = props.type.toLowerCase()
+  const opt = props.options || {}
+
+  // ✅ 如果用户提供完整配置，则直接使用
+  if (isFullOption(opt)) return JSON.parse(JSON.stringify(opt))
+
+  // ✅ 兜底模板
+  const basicXY = {
+    tooltip: { trigger: "axis" },
+    xAxis: { type: "category", data: opt.xData || [] },
+    yAxis: { type: "value" },
+    series: [{ type: t, data: opt.yData || [] }]
   }
-  if (isFullOption()) {
-    // 克隆一份，避免直接修改 props
-    const option = JSON.parse(JSON.stringify(opt))
-    // 如果缺少 series.type，则根据传入的图表类型进行补全（仅补第一个）
-    if (Array.isArray(option.series) && option.series.length) {
-      option.series = option.series.map((s, idx) => {
-        if (!s || typeof s !== "object") return s
-        if (!s.type && (t === "line" || t === "bar" || t === "pie" || t === "radar")) {
-          return { ...s, type: s.type || (idx === 0 ? t : s.type) }
-        }
-        return s
-      })
+
+  // -------------------------
+  // 🚀 3D 系列自动配置
+  // -------------------------
+  if (/3d$/.test(t)) {
+    const base3D = {
+      tooltip: {},
+      grid3D: {},
+      xAxis3D: { type: "value" },
+      yAxis3D: { type: "value" },
+      zAxis3D: { type: "value" },
     }
-    return option
-  }
-  // 散点图兜底配置
-  if (t === "scatter") {
-    const points = Array.isArray(opt.points) ? opt.points : []
-    const data = points.map((p) => (Array.isArray(p) ? p : p && p.value ? p.value : p))
-    return {
-      tooltip: { trigger: "item" },
-      xAxis: { type: "value" },
-      yAxis: { type: "value" },
-      series: [{ type: "scatter", data }]
+    if (t === "bar3d") {
+      return {
+        ...base3D,
+        visualMap: opt.visualMap || { max: 20, inRange: { color: ["#74add1", "#f46d43"] } },
+        series: [
+          {
+            type: "bar3D",
+            data: opt.data || [],
+            shading: "lambert",
+            itemStyle: { opacity: 0.9 },
+          }
+        ]
+      }
+    }
+    if (t === "scatter3d") {
+      return {
+        ...base3D,
+        series: [
+          {
+            type: "scatter3D",
+            data: opt.data || [],
+            symbolSize: 8,
+            itemStyle: { opacity: 0.8 }
+          }
+        ]
+      }
+    }
+    if (t === "surface3d") {
+      return {
+        ...base3D,
+        series: [
+          {
+            type: "surface",
+            wireframe: { show: false },
+            shading: "realistic",
+            data: opt.data || []
+          }
+        ]
+      }
+    }
+    if (t === "map3d" || t === "geo3d") {
+      return {
+        geo3D: {
+          map: opt.mapName || "china",
+          shading: "lambert",
+          regionHeight: 2,
+          realisticMaterial: { roughness: 0.6 },
+          viewControl: { distance: 120 },
+          environment: "#000"
+        },
+        series: [
+          {
+            type: "bar3D",
+            coordinateSystem: "geo3D",
+            data: opt.data || [],
+            shading: "lambert"
+          }
+        ]
+      }
+    }
+    if (t === "globe") {
+      return {
+        globe: {
+          baseTexture:
+              opt.baseTexture ||
+              "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/earth.jpg",
+          heightTexture:
+              opt.heightTexture ||
+              "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/bathymetry_bw_composite_4k.jpg",
+          shading: "lambert",
+          light: {
+            main: { intensity: 1.5 },
+            ambient: { intensity: 0.3 }
+          }
+        },
+        series: []
+      }
     }
   }
-  // 热力图兜底配置
-  if (t === "heatmap") {
-    const xCategories = opt.xCategories || []
-    const yCategories = opt.yCategories || []
-    const values = Array.isArray(opt.values) ? opt.values : [] // [xIndex, yIndex, value]
+
+  // -------------------------
+  // 🌏 地图自动配置
+  // -------------------------
+  if (t === "map" || t === "geo") {
+    const mapName = opt.mapName || "china"
     return {
-      tooltip: { position: "top" },
-      grid: { height: "70%", top: "10%" },
-      xAxis: { type: "category", data: xCategories, splitArea: { show: true } },
-      yAxis: { type: "category", data: yCategories, splitArea: { show: true } },
-      visualMap: {
-        min: opt.min ?? 0,
-        max: opt.max ?? 100,
-        calculable: true,
-        orient: "horizontal",
-        left: "center",
-        bottom: 0
-      },
+      tooltip: {},
+      visualMap: opt.visualMap || { left: "left", min: 0, max: 100 },
       series: [
         {
-          name: "heatmap",
-          type: "heatmap",
-          data: values,
-          emphasis: { itemStyle: { shadowBlur: 10, shadowColor: "rgba(0,0,0,0.4)" } }
-        }
-      ]
-    }
-  }
-  // 漏斗图兜底配置
-  if (t === "funnel") {
-    return {
-      tooltip: { trigger: "item", formatter: "{b}: {c}" },
-      legend: {},
-      series: [
-        {
-          type: "funnel",
-          left: "10%",
-          top: 20,
-          bottom: 20,
-          width: "80%",
-          min: 0,
-          max: opt.max ?? 100,
-          sort: opt.sort || "descending",
-          gap: 2,
-          label: { show: true, position: "inside" },
+          type: "map",
+          map: mapName,
           data: opt.data || []
         }
       ]
     }
   }
-  // K 线图兜底配置（蜡烛图）
-  if (t === "candlestick" || t === "kline" || t === "k-line") {
-    const categoryData = opt.categoryData || []
-    const values = opt.values || [] // [[open, close, low, high], ...]
+
+  // -------------------------
+  // 📊 其他图表类型（pie/radar/sankey 等）
+  // -------------------------
+  if (t === "pie") {
     return {
-      tooltip: { trigger: "axis" },
-      xAxis: { type: "category", data: categoryData, scale: true, boundaryGap: true },
-      yAxis: { scale: true },
-      series: [{ type: "candlestick", data: values }]
-    }
-  }
-  // 仪表盘兜底配置
-  if (t === "gauge") {
-    return {
+      tooltip: { trigger: "item" },
+      legend: { top: "bottom" },
       series: [
         {
-          type: "gauge",
-          progress: { show: true },
-          detail: { valueAnimation: true, formatter: "{value}%" },
-          data: opt.data || [{ value: 50, name: "Progress" }]
-        }
-      ]
-    }
-  }
-  // 树图兜底配置
-  if (t === "tree") {
-    return {
-      tooltip: { trigger: "item", triggerOn: "mousemove" },
-      series: [
-        {
-          type: "tree",
-          data: opt.data ? (Array.isArray(opt.data) ? opt.data : [opt.data]) : [],
-          top: "5%",
-          left: "10%",
-          bottom: "5%",
-          right: "20%",
-          symbolSize: 7,
-          label: { position: "left", verticalAlign: "middle", align: "right" },
-          leaves: { label: { position: "right", verticalAlign: "middle", align: "left" } },
-          expandAndCollapse: true,
-          animationDuration: 550,
-          animationDurationUpdate: 750
-        }
-      ]
-    }
-  }
-  // 矩形树图兜底配置
-  if (t === "treemap") {
-    return {
-      tooltip: { formatter: "{b}: {c}" },
-      series: [
-        {
-          type: "treemap",
+          type: "pie",
+          radius: ["40%", "70%"],
           data: opt.data || [],
-          leafDepth: opt.leafDepth || 1,
-          roam: true
+          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
+          label: { show: false },
+          emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } }
         }
       ]
     }
   }
-  // 旭日图兜底配置
-  if (t === "sunburst") {
+  if (t === "radar") {
     return {
-      series: [
-        {
-          type: "sunburst",
-          data: opt.data || [],
-          radius: [0, "90%"],
-          label: { rotate: "radial" }
-        }
-      ]
+      tooltip: {},
+      radar: { indicator: opt.indicator || [] },
+      series: [{ type: "radar", data: opt.data || [] }]
     }
   }
-  // 桑基图兜底配置
   if (t === "sankey") {
     return {
       series: [
@@ -207,206 +202,91 @@ function getOptionByType() {
       ]
     }
   }
-  // 关系图兜底配置（默认力引导布局）
-  if (t === "graph") {
+  if (t === "tree") {
     return {
       tooltip: {},
       series: [
         {
-          type: "graph",
-          layout: opt.layout || "force",
-          roam: true,
-          label: { show: true },
-          data: opt.nodes || [],
-          links: opt.links || [],
-          force: opt.force || { repulsion: 100 }
+          type: "tree",
+          data: opt.data ? (Array.isArray(opt.data) ? opt.data : [opt.data]) : [],
+          top: "5%", left: "10%", bottom: "5%", right: "20%"
         }
       ]
     }
   }
-  // 地图/地理坐标兜底配置（需要提供 geoJSON 或数据坐标）
-  if (t === "map" || t === "geo") {
-    const mapName = opt.mapName || "customMap"
-    return {
-      tooltip: {},
-      visualMap: opt.visualMap,
-      series: [
-        {
-          type: "map",
-          map: mapName,
-          data: opt.data || []
-        }
-      ]
-    }
-  }
-  if (t === "pie") {
-    return {
-      tooltip: { trigger: "item" },
-      legend: { top: "bottom" },
-      series: [
-        {
-          type: "pie",
-          radius: ["40%", "70%"],
-          avoidLabelOverlap: false,
-          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
-          label: { show: false, position: "center" },
-          emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } },
-          labelLine: { show: false },
-          data: opt.data || []
-        }
-      ]
-    }
-  }
-  if (t === "radar") {
-    return {
-      tooltip: {},
-      radar: { indicator: opt.indicator || [] },
-      series: [
-        {
-          type: "radar",
-          data: opt.data || []
-        }
-      ]
-    }
-  }
-  // line / bar
-  return {
-    tooltip: { trigger: "axis" },
-    xAxis: { type: "category", data: opt.xData || [] },
-    yAxis: { type: "value" },
-    series: [
-      {
-        type: t,
-        data: opt.yData || []
-      }
-    ]
-  }
+
+  return basicXY
 }
 
-async function maybeLoadEchartsGL(option) {
-  // 判断是否包含 3D 能力，若包含则按需加载 echarts-gl
-  const has3D = !!(
-    option &&
-    (option.grid3D ||
-      option.geo3D ||
-      option.globe ||
-      (Array.isArray(option.series) &&
-        option.series.some((s) => s && typeof s.type === "string" && /3d$/i.test(s.type))))
-  )
-  if (has3D && !echartsGLLoaded) {
-    try {
-      await import(/* webpackChunkName: "echarts-gl" */ "echarts-gl")
-      echartsGLLoaded = true
-    } catch (e) {
-      console.warn("未能加载 echarts-gl，3D 图表可能无法渲染。")
-    }
-  }
-}
-
-async function render() {
-  instance = echarts.init(root.value)
-  window.addEventListener("resize", handleResize)
-  if (!instance) return
-  try {
-    const option = getOptionByType()
-    if (!option || typeof option !== "object") return
-    // 注册地图（优先使用传入的 geoJSON，否则按常见名称尝试在线获取）
-    await ensureMapRegistered(option)
-    await maybeLoadEchartsGL(option)
-    // 自动为直角坐标系增加合理的上内边距，避免标题贴近图表
-    try {
-      const hasXAxis = typeof option.xAxis !== "undefined"
-      const hasYAxis = typeof option.yAxis !== "undefined"
-      if (hasXAxis || hasYAxis) {
-        const gridObj = option.grid && !Array.isArray(option.grid) ? option.grid : {}
-        const hasGridTop = typeof gridObj.top !== "undefined"
-        const hasTitle = typeof option.title !== "undefined"
-        if (!hasGridTop) {
-          const topGap = hasTitle ? 70 : 50
-          option.grid = { ...gridObj, top: gridObj.top ?? topGap }
-        }
-        if (hasTitle && typeof option.title.top === "undefined") {
-          option.title.top = 10
-        }
-      }
-    } catch (e) {}
-    instance.setOption(option, true)
-    // 设置完配置后在下一帧再 resize，避免在主流程中调用导致告警
-    requestAnimationFrame(() => {
-      if (instance) instance.resize()
-    })
-  } catch (e) {
-    // 捕获渲染异常，避免影响整页运行
-    console.error("ECharts render error:", e)
-  }
-}
-
+/** 注册地图（支持离线 geoJSON） */
 async function ensureMapRegistered(option) {
   try {
-    const opt = $props.options || {}
-    // 1) 如果 props 中直接提供了 geoJSON，则优先注册
+    const opt = props.options || {}
     const providedName =
-      opt.mapName ||
-      (option && option.series && option.series.find((s) => s && s.type === "map")?.map) ||
-      (option && option.geo && option.geo.map)
-    if (opt && opt.geoJSON && providedName && !registeredMapNames.has(providedName)) {
+        opt.mapName ||
+        (option?.series?.find((s) => s?.type === "map")?.map) ||
+        option?.geo?.map ||
+        option?.geo3D?.map
+
+    if (opt.geoJSON && providedName && !registeredMapNames.has(providedName)) {
       echarts.registerMap(providedName, opt.geoJSON)
       registeredMapNames.add(providedName)
       return
     }
-    // 2) 如果没有提供 geoJSON，但使用了常见的 china/world，则尝试在线获取
+
     const namesToCheck = new Set()
     if (providedName) namesToCheck.add(providedName)
-    if (option && Array.isArray(option.series)) {
-      option.series.forEach((s) => {
-        if (s && s.type === "map" && s.map) namesToCheck.add(s.map)
-      })
-    }
-    if (option && option.geo && option.geo.map) namesToCheck.add(option.geo.map)
     for (const name of namesToCheck) {
       if (registeredMapNames.has(name)) continue
       let geoUrl = null
       if (name.toLowerCase() === "china" || name === "中国") {
-        // 阿里数据服务中国边界（全国）
         geoUrl = "https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=100000_full"
       } else if (name.toLowerCase() === "world") {
         geoUrl = "https://echarts.apache.org/examples/data/asset/geo/world.json"
       }
       if (geoUrl) {
-        try {
-          const res = await fetch(geoUrl)
-          if (res.ok) {
-            const geojson = await res.json()
-            echarts.registerMap(name, geojson)
-            registeredMapNames.add(name)
-          }
-        } catch (e) {
-          // 忽略网络错误，保持原有报错提示由 ECharts 抛出
+        const res = await fetch(geoUrl)
+        if (res.ok) {
+          const geojson = await res.json()
+          echarts.registerMap(name, geojson)
+          registeredMapNames.add(name)
         }
       }
     }
   } catch (e) {
-    // 忽略地图注册过程中的异常
+    console.warn("地图注册失败:", e)
   }
 }
 
-onMounted(() => {
-  render()
-})
+/** 渲染核心逻辑 */
+async function render() {
+  if (!root.value) return
+  if (!instance) {
+    instance = echarts.init(root.value)
+    window.addEventListener("resize", handleResize)
+  }
 
+  try {
+    const option = getOptionByType()
+    if (!option || typeof option !== "object") return
+
+    await ensureMapRegistered(option)
+
+    instance.clear()
+    instance.setOption(option, true)
+    requestAnimationFrame(() => instance?.resize())
+  } catch (e) {
+    console.error("ECharts render error:", e)
+  }
+}
+
+onMounted(render)
 onBeforeUnmount(() => {
-  if (instance) {
-    instance.dispose()
-    instance = null
-  }
+  instance?.dispose()
+  instance = null
   window.removeEventListener("resize", handleResize)
-  if (resizeObserver) {
-    try {
-      resizeObserver.disconnect()
-    } catch (e) {}
-    resizeObserver = null
-  }
 })
+watch(() => props.options, render, { deep: true })
 </script>
 
-<style scoped lang="stylus"></style>
+<style scoped></style>
