@@ -64,7 +64,7 @@ function getOptionByType() {
       grid3D: {},
       xAxis3D: { type: "value" },
       yAxis3D: { type: "value" },
-      zAxis3D: { type: "value" },
+      zAxis3D: { type: "value" }
     }
     if (t === "bar3d") {
       return {
@@ -75,7 +75,7 @@ function getOptionByType() {
             type: "bar3D",
             data: opt.data || [],
             shading: "lambert",
-            itemStyle: { opacity: 0.9 },
+            itemStyle: { opacity: 0.9 }
           }
         ]
       }
@@ -130,11 +130,11 @@ function getOptionByType() {
       return {
         globe: {
           baseTexture:
-              opt.baseTexture ||
-              "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/earth.jpg",
+            opt.baseTexture ||
+            "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/earth.jpg",
           heightTexture:
-              opt.heightTexture ||
-              "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/bathymetry_bw_composite_4k.jpg",
+            opt.heightTexture ||
+            "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/bathymetry_bw_composite_4k.jpg",
           shading: "lambert",
           light: {
             main: { intensity: 1.5 },
@@ -209,7 +209,10 @@ function getOptionByType() {
         {
           type: "tree",
           data: opt.data ? (Array.isArray(opt.data) ? opt.data : [opt.data]) : [],
-          top: "5%", left: "10%", bottom: "5%", right: "20%"
+          top: "5%",
+          left: "10%",
+          bottom: "5%",
+          right: "20%"
         }
       ]
     }
@@ -223,10 +226,10 @@ async function ensureMapRegistered(option) {
   try {
     const opt = props.options || {}
     const providedName =
-        opt.mapName ||
-        (option?.series?.find((s) => s?.type === "map")?.map) ||
-        option?.geo?.map ||
-        option?.geo3D?.map
+      opt.mapName ||
+      option?.series?.find((s) => s?.type === "map")?.map ||
+      option?.geo?.map ||
+      option?.geo3D?.map
 
     if (opt.geoJSON && providedName && !registeredMapNames.has(providedName)) {
       echarts.registerMap(providedName, opt.geoJSON)
