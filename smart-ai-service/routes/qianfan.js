@@ -9,7 +9,7 @@ const { setEnvVariable } = require("@baiducloud/qianfan");
 
 // 引入数据库操作模块
 const { saveConversation, getUserConversations, getConversationById,
-    addMessageToConversation, deleteConversation, updateConversationName } = require('./db');
+    addMessageToConversation, deleteConversation, updateConversationName } = require('../services/conversationService');
 /**使用安全认证AK/SK鉴权，通过环境变量初始化；替换下列示例中参数，
  * 安全认证Access Key替换your_iam_ak，Secret Key替换your_iam_sk，
  * 如何获取请查看https://cloud.baidu.com/doc/Reference/s/9jwvz2egb

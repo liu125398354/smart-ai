@@ -7,6 +7,12 @@
 var app = require('../app');
 var debug = require('debug')('smart-ai-web-service:server');
 var http = require('http');
+const connectDB = require('../config/dbConnect');
+
+/**
+ * Connect to MongoDB before starting server
+ */
+connectDB(); // ✅ 在启动时连接数据库
 
 /**
  * Get port from environment and store in Express.
