@@ -10,8 +10,8 @@ const dotenv = require('dotenv'); // ✅ 加载 .env.development 文件
 
 // 自动根据 NODE_ENV 加载环境配置
 const envFile = process.env.NODE_ENV === 'production'
-    ? '.env.development.production'
-    : '.env.development.development';
+    ? '.env.production'
+    : '.env.development';
 dotenv.config({ path: envFile });
 
 console.log('当前环境:', process.env.NODE_ENV || 'development');
