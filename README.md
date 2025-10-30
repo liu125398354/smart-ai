@@ -26,56 +26,61 @@ chatgpt5等一系列版本出来后，就想着把每一处的细节补充一下
 
 ```markdown
 smart-ai
-├── smart-ai-web   # 前端项目
-│   ├── public   # 静态资源
-│   ├── src   # 源代码
-│   │   ├── api   # 接口请求
+├── smart-ai-web                       # 前端项目
+│   ├── public                         # 静态资源
+│   ├── src                            # 源代码
+│   │   ├── api                        # 接口请求
 │   │   │   ├── chat.js
 │   │   │   └── drawing.js
-│   │   ├── assets   # 前端资源文件
-│   │   ├── components   # 公共组件
-│   │   │   ├── ChartRenderer.vue
+│   │   ├── assets                     # 前端资源文件
+│   │   ├── components                 # 公共组件
+│   │   │   ├── ChartRenderer.vue      # ECharts 渲染组件
 │   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
-│   │   │   └── MermaidRenderer.vue   # 集成bytemd的组件
-│   │   ├── directives # 自定义指令
-│   │   │   └── v-ellipsis-title.js
-│   │   ├── layouts   # 布局文件
+│   │   │   └── MermaidRenderer.vue    # 集成bytemd的组件
+│   │   ├── directives                 # Vue 自定义指令
+│   │   │   └── v-ellipsis-title.js    # 悬浮显示 title
+│   │   ├── layouts                    # 布局文件
 │   │   │   └── index.vue
-│   │   ├── router   # 路由
+│   │   ├── router                     # 路由
 │   │   │   └── index.js
-│   │   ├── service   # 封装的服务
-│   │   │   └── axios.js
-│   │   ├── store   # 状态管理
-│   │   ├── utils   # 工具函数
-│   │   ├── views   # 页面视图
-│   │   │   ├── chat   # 聊天页面
+│   │   ├── service                    # 封装的服务
+│   │   │   └── axios.js               # Axios 实例封装（统一拦截器）
+│   │   ├── store                      # 状态管理
+│   │   ├── utils                      # 工具函数
+│   │   ├── views                      # 页面视图
+│   │   │   ├── chat                   # 聊天页面
 │   │   │   │   └── chat.vue
-│   │   │   ├── drawing   # 绘图页面
+│   │   │   ├── drawing                # 绘图页面
 │   │   │   │   └── drawing.vue
-│   │   │   ├── EventSource.html
-│   │   │   └── katex.html
-│   │   ├── App.vue   # 主组件
-│   │   └── main.js   # 入口文件
-│   ├── babel.config.js   # Babel 配置
-│   ├── jsconfig.json   # JS/TS 配置
+│   │   │   ├── EventSource.html       # 测试 EventSource（SSE）页面
+│   │   │   └── katex.html             # 测试公式渲染用页面（KaTeX）
+│   │   ├── App.vue                    # 主组件
+│   │   └── main.js                    # 入口文件
+│   ├── babel.config.js                # Babel 配置
+│   ├── jsconfig.json                  # JS/TS 配置
 │   ├── package-lock.json
-│   ├── package.json   # 前端配置
-│   └── vue.config.js   # Vue CLI 配置
-├── smart-ai-service   # 后端项目
-│   ├── bin   # 可执行文件
-│   ├── public   # 静态资源
-│   ├── routes   # 路由文件
+│   ├── package.json                   # 前端配置
+│   └── vue.config.js                  # Vue CLI 配置
+├── smart-ai-service                   # 后端项目
+│   ├── bin                            # 启动脚本目录
+│   ├── config                         # 配置文件目录
+│   │   └── dbConnect.js               # MongoDB 数据库连接逻辑
+│   ├── models                         # 数据模型（Mongoose Schema）
+│   │   └── db.js                      # Conversation模型定义
+│   ├── public                         # 静态资源
+│   ├── routes                         # 接口文件
 │   │   ├── chat.js
-│   │   ├── db.js
 │   │   ├── drawing.js
 │   │   └── qianfan.js
-│   ├── views   # 页面视图
-│   ├── app.js   # 后端入口
-│   ├── nodemon.json   # nodemon 配置
+│   ├── services
+│   │   └── conversationService.js     # 对话相关的业务逻辑封装
+│   ├── views                          # 页面视图
+│   ├── app.js                         # 后端入口
+│   ├── nodemon.json                   # nodemon 配置
 │   ├── package-lock.json
-│   └── package.json   # 后端配置
+│   └── package.json                   # 后端配置
 ├── package-lock.json
-├── package.json   # 公共配置文件
+├── package.json                       # 公共配置文件
 └── README.md
 ```
 
