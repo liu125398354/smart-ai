@@ -2,8 +2,6 @@ var express = require('express');
 var router = express.Router();
 const axios = require('axios-https-proxy-fix')
 const { v4: uuidv4 } = require('uuid');
-
-require('dotenv').config(); // ✅ 加载 .env 文件
 const { ChatCompletion } = require("@baiducloud/qianfan");
 const { setEnvVariable } = require("@baiducloud/qianfan");
 
