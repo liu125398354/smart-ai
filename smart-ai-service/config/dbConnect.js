@@ -1,7 +1,7 @@
 /**
  * @Author: Liunannan
  * @Date: 2025/10/30 14:23
- * @Description:
+ * @Description:数据库连接
  */
 const mongoose = require('mongoose');
 
@@ -10,7 +10,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/chat_histo
 async function connectDB() {
     try {
         await mongoose.connect(MONGO_URI);
-        console.log('✅ MongoDB 已连接');
+        console.log('MongoDB 已连接');
 
         // 监听连接状态
         mongoose.connection.on('connected', () => {
@@ -18,11 +18,11 @@ async function connectDB() {
         });
 
         mongoose.connection.on('error', (err) => {
-            console.error('❌ MongoDB 连接出错:', err);
+            console.error('MongoDB 连接出错:', err);
         });
 
         mongoose.connection.on('disconnected', () => {
-            console.warn('⚠️ MongoDB 已断开连接');
+            console.warn('MongoDB 已断开连接');
         });
 
         // 捕获 Node 进程退出，关闭 MongoDB 连接
@@ -34,7 +34,7 @@ async function connectDB() {
 
         return mongoose.connection;
     } catch (err) {
-        console.error('❌ MongoDB 连接失败:', err);
+        console.error('MongoDB 连接失败:', err);
         process.exit(1); // 连接失败直接退出进程
     }
 }

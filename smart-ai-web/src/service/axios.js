@@ -4,14 +4,10 @@
 
 import axios from "axios"
 import { message } from "ant-design-vue"
+import { BASE_URL } from "@/config/apiConfig"
 
 const service = axios.create({
-  baseURL:
-    process.env.NODE_ENV === "development"
-      ? "/api"
-      : process.env.NODE_ENV === "production"
-      ? ""
-      : "",
+  baseURL: BASE_URL,
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 20000 // request timeout
 })

@@ -37,6 +37,8 @@ smart-ai
 │   │   │   ├── ChartRenderer.vue      # ECharts 渲染组件
 │   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
 │   │   │   └── MermaidRenderer.vue    # 集成bytemd的组件
+│   │   ├── config                     # 配置文件目录
+│   │   │   └── apiConfig.js           # URL地址统一配置
 │   │   ├── directives                 # Vue 自定义指令
 │   │   │   └── v-ellipsis-title.js    # 悬浮显示 title
 │   │   ├── layouts                    # 布局文件

@@ -120,6 +120,7 @@
 import { ref, onMounted, computed, nextTick } from "vue"
 import { useStore } from "vuex"
 import { parseTime } from "@/utils"
+import { BASE_URL } from "@/config/apiConfig"
 
 import BScroll from "better-scroll"
 import {
@@ -327,7 +328,7 @@ async function sendMessage() {
   //   sendDisabled.value = false
   // })
   try {
-    const response = await fetch("/api/qianfan/getQianFanMessage", {
+    const response = await fetch(`${BASE_URL}/qianfan/getQianFanMessage`, {
       signal,
       method: "POST",
       headers: {
