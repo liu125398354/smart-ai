@@ -8,6 +8,8 @@ var logger = require('morgan');
 var drawingRouter = require('./routes/drawing');
 var chatRouter = require('./routes/chat');
 var qianFanRouter = require('./routes/qianfan');
+var authRouter = require('./routes/auth');
+var { authenticateToken } = require('./middleware/authMiddleware');
 
 var app = express();
 
@@ -27,9 +29,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/draw', drawingRouter);
-app.use('/chat', chatRouter);
-app.use('/qianfan', qianFanRouter);
+// 对需要认证的路由使用统一认证中间件
+app.use('/draw', authenticateToken, drawingRouter);
+app.use('/chat', authenticateToken, chatRouter);
+app.use('/qianfan', authenticateToken, qianFanRouter);
+app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

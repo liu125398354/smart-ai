@@ -3,7 +3,7 @@
  */
 import { saveToLocal, getFromLocal } from "@/utils"
 import chatApi from "@/api/chat"
-import user from "@/store/modules/user";
+import user from "@/store/modules/user"
 
 const chat = {
   state: {
@@ -137,7 +137,7 @@ const chat = {
   actions: {
     async getConversationsList({ commit, rootState }) {
       try {
-        const response = await chatApi.getConversations({ userId: rootState.user.userId })
+        const response = await chatApi.getConversations({ userId: rootState.user.userInfo?.id })
         commit("setConversationsData", response) // 请求成功后将数据存储到state中
         return Promise.resolve(response)
       } catch (error) {
@@ -153,7 +153,9 @@ const chat = {
       }
       // 如果本地storage被删除，则从后台获取所有对话内容
       try {
-        const response = await chatApi.getChatMessagesByUser({ userId: rootState.user.userId })
+        const response = await chatApi.getChatMessagesByUser({
+          userId: rootState.user.userInfo?.id
+        })
         commit("setMessage", response.data) // 存储数据到state中
         return Promise.resolve(response)
       } catch (error) {
@@ -166,7 +168,6 @@ const chat = {
     getMessageData: (state) => {
       let data =
         (state.messageList.length > 0 ? state.messageList : "") || getFromLocal("chatMessage")
-      console.log("message data---", data)
       if (data) {
         const index = data.findIndex((item) => item.conversationId === state.selectedConversationId)
         return index > -1 ? data[index].messages : []

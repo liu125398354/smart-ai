@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 // 定义消息 Schema
 const messageSchema = new mongoose.Schema({
@@ -40,4 +41,32 @@ conversationSchema.set('toJSON', {
 // 创建 Conversation 模型
 const Conversation = mongoose.model('Conversation', conversationSchema);
 
-module.exports = { Conversation }
+// 定义用户 Schema
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    created_at: { type: Date, default: Date.now }
+});
+
+// 添加密码加密的中间件
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+// 添加验证密码的方法
+userSchema.methods.validatePassword = async function(password) {
+    return bcrypt.compare(password, this.password);
+};
+
+// 创建 User 模型
+const User = mongoose.model('User', userSchema);
+
+module.exports = { Conversation, User }

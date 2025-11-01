@@ -168,7 +168,6 @@ const selectedConversationId = computed(() => store.getters.getSelectedConversat
 const userId = computed(() => store.getters.getUserId)
 
 onMounted(async () => {
-  store.commit("setUserId")
   store.commit("setMessage")
   try {
     await initConversationsList()
@@ -309,7 +308,7 @@ async function sendMessage() {
   sendDisabled.value = true
   let params = {
     conversationId: store.state.chat.selectedConversationId,
-    userId: store.state.user.userId,
+    userId: userId.value,
     role: "user",
     content: text.value,
     createTime: new Date().getTime()
@@ -453,10 +452,8 @@ function selectConversation(id) {
   cancelRequest()
   store.commit("setSelectedConversationId", id)
   if (!chatScroll.value) {
-    console.log("没初始化----")
     initScroll()
   }
-  console.log("scrollbottom")
   scrollBottom()
 }
 
@@ -496,7 +493,6 @@ function scrollToBottomThrottle() {
 function scrollBottom() {
   nextTick(() => {
     const content = document.querySelector(".chat-wrapper")
-    console.log("11111-", content)
     const height = content.scrollHeight
     if (height !== lastHeight.value) {
       lastHeight.value = height
