@@ -50,7 +50,7 @@ service.interceptors.response.use(
     // 这里是全局错误提示处理
     if (res) {
       if (res.status === 401) {
-        message.error("未授权，请重新登录")
+        return Promise.resolve(res.data)
       } else if (res.status === 400 || res.status === 500) {
         message.error(res.data.message)
       } else {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/db');
+const crypto = require('crypto');
 
 // JWT 密钥（在生产环境中应该使用环境变量）
 const JWT_SECRET = process.env.JWT_SECRET || 'smart-ai-secret-key';
@@ -9,8 +10,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'smart-ai-secret-key';
 // 用户注册
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, email } = req.body;
-
+    let { username, password, email } = req.body;
+    
+    // 对前端传来的SHA256密码再进行bcrypt加密存储
+    // 这里我们直接使用前端传来的哈希值作为密码明文，让bcrypt再次加密
+    
     // 检查用户是否已存在
     const existingUser = await User.findOne({ 
       $or: [{ username }, { email }] 

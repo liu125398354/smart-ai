@@ -94,6 +94,7 @@ import { message } from "ant-design-vue"
 import { useRouter } from "vue-router"
 import { useStore } from "vuex"
 import api from "@/api/auth"
+import CryptoJS from "crypto-js"
 
 const router = useRouter()
 const store = useStore()
@@ -153,9 +154,12 @@ const handleLogin = async () => {
     loading.value = true
     await formRef.value.validate()
 
+    // 对密码进行SHA256哈希处理
+    const hashedPassword = CryptoJS.SHA256(formState.password).toString()
+
     const res = await api.login({
       username: formState.username,
-      password: formState.password
+      password: hashedPassword
     })
 
     if (res.success) {
@@ -183,10 +187,13 @@ const handleRegister = async () => {
     registerLoading.value = true
     await registerFormRef.value.validate()
 
+    // 对密码进行SHA256哈希处理
+    const hashedPassword = CryptoJS.SHA256(registerForm.password).toString()
+
     const res = await api.register({
       username: registerForm.username,
       email: registerForm.email,
-      password: registerForm.password
+      password: hashedPassword
     })
 
     if (res.success) {
