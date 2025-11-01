@@ -39,6 +39,34 @@ async function getUserConversations(userId) {
     }
 }
 
+// 获取某个用户的所有对话详细信息（包含 messages）
+async function getChatMessagesByUser(userId) {
+    try {
+        // 查找该用户的所有对话
+        const conversations = await Conversation.find({ user_id: userId })
+            .sort({ created_at: -1 }); // 按创建时间倒序排列
+
+        // 格式化返回数据
+        const result = conversations.map(conv => ({
+            conversationId: conv.conversation_id,
+            conversationName: conv.conversation_name,
+            userId: conv.user_id,
+            messages: conv.messages.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+                createTime: msg.timestamp ? msg.timestamp.getTime() : null // 转换为时间戳（毫秒）
+            }))
+        }));
+
+        return result;
+
+    } catch (error) {
+        console.error('Error retrieving conversations with messages:', error);
+        throw error;
+    }
+}
+
+
 // 获取某个对话的历史
 async function getConversationById(conversationId) {
     try {
@@ -118,6 +146,7 @@ const updateConversationName = async (userId, conversationId, newName) => {
 module.exports = {
     saveConversation,
     getUserConversations,
+    getChatMessagesByUser,
     getConversationById,
     addMessageToConversation,
     deleteConversation,

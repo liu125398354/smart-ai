@@ -172,6 +172,7 @@ onMounted(async () => {
   store.commit("setMessage")
   try {
     await initConversationsList()
+    await initChatMessages()
     store.commit("setSelectedConversationId", selectedConversationId.value)
     await scrollToSelectedPosition() // 数据列表加载选中后，再滚动
     store.commit("setEnableEllipsisObserver", true) // 设置初始化是否滚动完成的标志
@@ -184,6 +185,10 @@ onMounted(async () => {
 
 function initConversationsList() {
   return store.dispatch("getConversationsList")
+}
+
+function initChatMessages() {
+  return store.dispatch("getChatMessages")
 }
 
 function initScroll() {
@@ -448,8 +453,10 @@ function selectConversation(id) {
   cancelRequest()
   store.commit("setSelectedConversationId", id)
   if (!chatScroll.value) {
+    console.log("没初始化----")
     initScroll()
   }
+  console.log("scrollbottom")
   scrollBottom()
 }
 
@@ -489,6 +496,7 @@ function scrollToBottomThrottle() {
 function scrollBottom() {
   nextTick(() => {
     const content = document.querySelector(".chat-wrapper")
+    console.log("11111-", content)
     const height = content.scrollHeight
     if (height !== lastHeight.value) {
       lastHeight.value = height

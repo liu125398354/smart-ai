@@ -30,6 +30,13 @@ export default {
       data: params
     })
   },
+  getChatMessagesByUser(params) {
+    return request({
+      url: "/qianfan/getChatMessagesByUser",
+      method: "post",
+      data: params
+    })
+  },
   delConversations(params) {
     return request({
       url: "/qianfan/deleteConversations",

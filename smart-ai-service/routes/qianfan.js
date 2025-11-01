@@ -6,7 +6,7 @@ const { ChatCompletion } = require("@baiducloud/qianfan");
 const { setEnvVariable } = require("@baiducloud/qianfan");
 
 // 引入数据库操作模块
-const { saveConversation, getUserConversations, getConversationById,
+const { saveConversation, getUserConversations, getChatMessagesByUser, getConversationById,
     addMessageToConversation, deleteConversation, updateConversationName } = require('../services/conversationService');
 /**使用安全认证AK/SK鉴权，通过环境变量初始化；替换下列示例中参数，
  * 安全认证Access Key替换your_iam_ak，Secret Key替换your_iam_sk，
@@ -203,6 +203,34 @@ router.post('/getConversationsList', async function (req, res, next) {
     let conversationsData = await getUserConversations(req.body.userId)
     res.json(conversationsData)
 })
+
+router.post('/getChatMessagesByUser', async function (req, res) {
+    try {
+        const { userId } = req.body
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: '缺少参数 userId'
+            })
+        }
+        // 调用数据库查询函数
+        const chatMessages = await getChatMessagesByUser(userId)
+        // 成功返回
+        res.json({
+            success: true,
+            data: chatMessages
+        });
+
+    } catch (error) {
+        console.error('获取用户聊天记录失败:', error)
+        res.status(500).json({
+            success: false,
+            message: '服务器内部错误',
+            error: error.message
+        })
+    }
+})
+
 
 router.post('/deleteConversations', async function (req, res, next) {
     const { userId, conversationId } = req.body

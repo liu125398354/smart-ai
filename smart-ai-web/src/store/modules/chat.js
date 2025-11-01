@@ -3,6 +3,7 @@
  */
 import { saveToLocal, getFromLocal } from "@/utils"
 import chatApi from "@/api/chat"
+import user from "@/store/modules/user";
 
 const chat = {
   state: {
@@ -112,9 +113,14 @@ const chat = {
       }
     },
     setMessage(state, message) {
-      let data = getFromLocal("chatMessage")
-      if (data) {
-        state.messageList = data
+      if (Array.isArray(message) && message.length > 0) {
+        saveToLocal("chatMessage", message)
+        state.messageList = message
+      } else {
+        let data = getFromLocal("chatMessage")
+        if (data) {
+          state.messageList = data
+        }
       }
     },
     setChartsMessage(state, message) {
@@ -139,12 +145,28 @@ const chat = {
         return Promise.reject(error)
       } finally {
       }
+    },
+    async getChatMessages({ commit, rootState }) {
+      let messageList = rootState.chat.messageList
+      if (Array.isArray(messageList) && messageList.length > 0) {
+        return
+      }
+      // 如果本地storage被删除，则从后台获取所有对话内容
+      try {
+        const response = await chatApi.getChatMessagesByUser({ userId: rootState.user.userId })
+        commit("setMessage", response.data) // 存储数据到state中
+        return Promise.resolve(response)
+      } catch (error) {
+        commit("setError", error) // 处理错误
+        return Promise.reject(error)
+      }
     }
   },
   getters: {
     getMessageData: (state) => {
       let data =
         (state.messageList.length > 0 ? state.messageList : "") || getFromLocal("chatMessage")
+      console.log("message data---", data)
       if (data) {
         const index = data.findIndex((item) => item.conversationId === state.selectedConversationId)
         return index > -1 ? data[index].messages : []
