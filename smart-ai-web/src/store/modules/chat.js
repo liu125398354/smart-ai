@@ -87,6 +87,7 @@ const chat = {
       if (lastIndex < 0) return
       const last = messages[lastIndex]
       if (last.role === "assistant") {
+        last.isChart = true
         last.chartPayload = chartPayload
         last.content = "" // 由渲染器负责显示
         last.createTime = new Date().getTime()

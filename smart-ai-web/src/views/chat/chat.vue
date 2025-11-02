@@ -74,7 +74,7 @@
               </div>
               <div class="chat-left-content">
                 <p class="chat-time">{{ parseTime(item.createTime) }}</p>
-                <template v-if="item.chartPayload">
+                <template v-if="item.isChart && item.chartPayload">
                   <chart-renderer
                     :type="item.chartPayload.type"
                     :options="item.chartPayload.options"

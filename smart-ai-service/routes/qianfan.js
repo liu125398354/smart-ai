@@ -77,6 +77,24 @@ router.post('/getQianFanMessage', async function (req, res, next) {
 
 });
 
+// === 提取图表 JSON 的辅助函数 ===
+function extractChartJson(text) {
+    if (!text) return null
+    try {
+        const obj = JSON.parse(text)
+        if (obj && obj.type && obj.options) return obj
+    } catch (e) {}
+
+    const match = text.match(/\{[\s\S]*\}/)
+    if (match) {
+        try {
+            const obj = JSON.parse(match[0])
+            if (obj && obj.type && obj.options) return obj
+        } catch (e) {}
+    }
+    return null
+}
+
 // 处理向大模型发送请求
 async function handleModelRequest(conversationId, userMessage, historyRecords, res, chartAgent) {
     try {
@@ -156,15 +174,20 @@ async function handleModelRequest(conversationId, userMessage, historyRecords, r
             // await new Promise(resolve => setTimeout(resolve, 1000)); // 添加延迟观察效果
         }
 
-        // 保存模型的响应到历史记录
-        await addMessageToConversation(conversationId, {
-            role: 'assistant',
-            content: fullResponse,
-            timestamp: new Date(), // 使用当前时间
-        });
-
         // 流结束时发送完成信号
         res.end();
+
+        // === 尝试解析是否是图表类型 ===
+        const chartPayload = extractChartJson(fullResponse)
+
+        // 保存模型的响应到历史记录
+        await addMessageToConversation(conversationId, {
+            role: "assistant",
+            content: chartPayload ? "" : fullResponse,
+            chartPayload: chartPayload || null,
+            isChart: !!chartPayload,
+            timestamp: new Date(), // 使用当前时间
+        });
 
         /**
          * 模拟流数据的测试

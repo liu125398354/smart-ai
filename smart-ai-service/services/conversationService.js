@@ -54,6 +54,8 @@ async function getChatMessagesByUser(userId) {
             messages: conv.messages.map(msg => ({
                 role: msg.role,
                 content: msg.content,
+                isChart: !!msg.isChart,
+                chartPayload: msg.chartPayload || null,
                 createTime: msg.timestamp ? msg.timestamp.getTime() : null // 转换为时间戳（毫秒）
             }))
         }));

@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const messageSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'assistant'], required: true }, // 角色字段，用户或助手
     content: { type: String, required: true }, // 消息内容
+    isChart: { type: Boolean, default: false }, // 是否为图表
+    chartPayload: { type: Object, default: null }, // 图表数据
     timestamp: { type: Date, required: true }, // 消息时间戳
 });
 
