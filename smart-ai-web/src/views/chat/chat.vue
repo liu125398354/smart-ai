@@ -166,6 +166,7 @@ const messageList = computed(() => store.getters.getMessageData)
 const conversationsList = computed(() => store.getters.getConversationsData)
 const selectedConversationId = computed(() => store.getters.getSelectedConversationId)
 const userId = computed(() => store.getters.getUserId)
+const token = computed(() => store.getters.getToken)
 
 onMounted(async () => {
   store.commit("setMessage")
@@ -332,15 +333,12 @@ async function sendMessage() {
   //   sendDisabled.value = false
   // })
   try {
-    // 从本地存储获取 token
-    const token = localStorage.getItem("token")
-
     const response = await fetch(`${BASE_URL}/qianfan/getQianFanMessage`, {
       signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json", // 明确指定 JSON 格式
-        Authorization: token ? `Bearer ${token}` : ""
+        Authorization: token.value ? `Bearer ${token.value}` : ""
       },
       body: JSON.stringify(params)
     })

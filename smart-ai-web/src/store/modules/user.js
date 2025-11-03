@@ -1,21 +1,21 @@
 /**
  * Created by liunannan on 2023/08/16.
  */
-import { saveToLocal, getFromLocal } from "@/utils/index"
+import { saveToLocal, getFromLocal, removeLocal } from "@/utils/index"
 import { v4 as uuidv4 } from "uuid"
 
 // 初始化用户信息
 function initUserInfo() {
-  const token = localStorage.getItem("token")
-  const userInfo = localStorage.getItem("userInfo")
+  const token = getFromLocal("token")
+  const userInfo = getFromLocal("userInfo")
   if (token && userInfo) {
     try {
       return JSON.parse(userInfo)
     } catch (e) {
       console.error("解析用户信息失败:", e)
       // 清除无效的本地存储
-      localStorage.removeItem("token")
-      localStorage.removeItem("userInfo")
+      removeLocal("token")
+      removeLocal("userInfo")
     }
   }
   return null
@@ -23,23 +23,23 @@ function initUserInfo() {
 
 const user = {
   state: {
-    token: localStorage.getItem("token") || "",
+    token: getFromLocal("token") || "",
     userInfo: initUserInfo()
   },
   mutations: {
     setToken(state, token) {
       state.token = token
-      localStorage.setItem("token", token)
+      saveToLocal("token", token)
     },
     setUserInfo(state, userInfo) {
       state.userInfo = userInfo
-      localStorage.setItem("userInfo", JSON.stringify(userInfo))
+      saveToLocal("userInfo", userInfo)
     },
     clearUserInfo(state) {
       state.userInfo = null
       // 清除本地存储
-      localStorage.removeItem("token")
-      localStorage.removeItem("userInfo")
+      removeLocal("token")
+      removeLocal("userInfo")
     }
   },
   actions: {},
@@ -49,6 +49,9 @@ const user = {
     },
     getUserInfo: (state) => {
       return state.userInfo
+    },
+    getToken: (state) => {
+      return state.token
     }
   }
 }

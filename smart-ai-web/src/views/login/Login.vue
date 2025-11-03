@@ -94,6 +94,7 @@ import { message } from "ant-design-vue"
 import { useRouter } from "vue-router"
 import { useStore } from "vuex"
 import api from "@/api/auth"
+import { saveToLocal } from "@/utils/index"
 import CryptoJS from "crypto-js"
 
 const router = useRouter()
@@ -163,9 +164,7 @@ const handleLogin = async () => {
     })
 
     if (res.success) {
-      // 保存token到 Vuex store 和 localStorage
       store.commit("setToken", res.data.token)
-      // 保存用户信息到 Vuex store 和 localStorage
       store.commit("setUserInfo", res.data.user)
 
       message.success("登录成功")

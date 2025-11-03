@@ -18,16 +18,7 @@ export function register(data) {
   })
 }
 
-// 验证token
-export function verifyToken() {
-  return service({
-    url: "/auth/verify",
-    method: "get"
-  })
-}
-
 export default {
   login,
-  register,
-  verifyToken
+  register
 }

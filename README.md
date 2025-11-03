@@ -30,6 +30,7 @@ smart-ai
 │   ├── public                         # 静态资源
 │   ├── src                            # 源代码
 │   │   ├── api                        # 接口请求
+│   │   │   ├── auth.js
 │   │   │   ├── chat.js
 │   │   │   └── drawing.js
 │   │   ├── assets                     # 前端资源文件

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router"
+import { getFromLocal } from "@/utils/index"
 import Layout from "../layouts/index"
 
 const routes = [
@@ -47,8 +48,7 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem("token")
-
+  const token = getFromLocal("token")
   // 需要认证的路由
   if (to.meta.requiresAuth && !token) {
     next("/login")

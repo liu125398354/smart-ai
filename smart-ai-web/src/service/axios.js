@@ -5,6 +5,7 @@
 import axios from "axios"
 import { message } from "ant-design-vue"
 import { BASE_URL } from "@/config/apiConfig"
+import { getFromLocal } from "@/utils/index"
 
 const service = axios.create({
   baseURL: BASE_URL,
@@ -16,7 +17,7 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     // do something before request is sent
-    const token = localStorage.getItem("token")
+    const token = getFromLocal("token")
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
