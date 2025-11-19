@@ -10,7 +10,7 @@ function initUserInfo() {
   const userInfo = getFromLocal("userInfo")
   if (token && userInfo) {
     try {
-      return JSON.parse(userInfo)
+      return userInfo
     } catch (e) {
       console.error("解析用户信息失败:", e)
       // 清除无效的本地存储

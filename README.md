@@ -55,6 +55,8 @@ smart-ai
 │   │   │   │   └── chat.vue
 │   │   │   ├── drawing                # 绘图页面
 │   │   │   │   └── drawing.vue
+│   │   │   ├── login                  # 登录页面
+│   │   │   │   └── Login.vue
 │   │   │   ├── EventSource.html       # 测试 EventSource（SSE）页面
 │   │   │   └── katex.html             # 测试公式渲染用页面（KaTeX）
 │   │   ├── App.vue                    # 主组件
@@ -68,10 +70,13 @@ smart-ai
 │   ├── bin                            # 启动脚本目录
 │   ├── config                         # 配置文件目录
 │   │   └── dbConnect.js               # MongoDB 数据库连接逻辑
+│   ├── mideleware                     # 中间件目录
+│   │   └── authMiddleware.js          # 统一认证鉴权
 │   ├── models                         # 数据模型（Mongoose Schema）
 │   │   └── db.js                      # Conversation模型定义
 │   ├── public                         # 静态资源
 │   ├── routes                         # 接口文件
+│   │   ├── auth.js
 │   │   ├── chat.js
 │   │   ├── drawing.js
 │   │   └── qianfan.js
