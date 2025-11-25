@@ -1,6 +1,6 @@
 <template>
   <div class="chat-container">
-    <div class="chat-list">
+    <div class="chat-list" :class="{ 'list-hide': listShow === false }">
       <div class="top-new">
         <a-button type="dashed" @click="createConversation">开启新对话</a-button>
       </div>
@@ -43,6 +43,10 @@
       </ul>
     </div>
     <div class="chat-record">
+      <div class="toggle-container">
+        <LeftOutlined v-if="listShow" class="toggle-btn" @click="toggleBtn('left')"/>
+        <RightOutlined v-else class="toggle-btn" @click="toggleBtn('right')"/>
+      </div>
       <div class="chat-agent">
         <a-button type="default" @click="toggleChartAgent">{{
           showChartAgent ? "关闭图表智能体" : "开启图表智能体"
@@ -131,7 +135,9 @@ import {
   EditOutlined,
   DeleteOutlined,
   SaveOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  LeftOutlined,
+  RightOutlined
 } from "@ant-design/icons-vue"
 import { createVNode } from "vue"
 import { message, Modal } from "ant-design-vue"
@@ -149,6 +155,7 @@ const text = ref("")
 const sendDisabled = ref(false)
 const synthesis = ref(null)
 const showChartAgent = ref(false)
+let listShow = ref(true)
 let eventSource = null
 let isEdit = ref(false)
 let isEnter = ref(false)
@@ -620,6 +627,10 @@ function handleSpeechEnd() {
 function stopSpeech() {
   window.speechSynthesis.cancel()
 }
+
+function toggleBtn(direction) {
+  listShow.value = direction !== "left"
+}
 </script>
 
 <style scoped lang="stylus">
@@ -633,9 +644,16 @@ function stopSpeech() {
   display flex
   border 1px solid #ccc
   border-radius 5px
+  .list-hide
+    flex 0 0 0 !important
+    width 0 !important
+    transform translateX(-260px)
+    transition-duration 0.3s
   .chat-list
     position relative
     flex  0 0 260px
+    width 260px
+    transition-duration 0.3s
     &::after
       content ""
       position absolute
@@ -679,11 +697,32 @@ function stopSpeech() {
         background-color #f5f5f5
         color #1677ff
   .chat-record
+    position relative
     flex 1
     display flex
     flex-direction column
-    overflow hidden // 必须设置聊天内容才能随窗口自适应
+    //overflow hidden // 必须设置聊天内容才能随窗口自适应
     //min-width 0
+    .toggle-container
+      position absolute
+      left 0
+      top 50%
+      width 24px
+      height 24px
+      transform translate(-50%, -50%)
+      background #ffffff
+      border 1px solid rgb(239, 239, 245)
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .06)
+      border-radius 50%
+      cursor pointer
+      z-index 1
+      .toggle-btn
+        display inline-block
+        width 24px
+        height 24px
+        line-height 24px
+        text-align center
+        color #b4bbc4
     .chat-agent
       padding 10px
       border-bottom 1px solid #efeff5
