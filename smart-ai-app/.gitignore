@@ -1,0 +1,39 @@
+# Node modules
+node_modules/
+
+# HBuilderX / uni-app build 输出
+unpackage/
+dist/
+
+# VS Code 配置
+.vscode/
+
+# Mac 系统文件
+.DS_Store
+
+# 日志文件
+*.log
+
+# npm / yarn lock 文件
+package-lock.json
+yarn.lock
+
+# 临时文件
+*.tmp
+*.temp
+
+# 编译产物
+*.map
+*.tsbuildinfo
+
+# IDE 配置文件
+.idea/
+
+# 打包缓存
+.cache/
+
+# 小程序本地调试缓存
+.sass-cache/
+*.wxss.cache
+*.wxml.cache
+*.wxs.cache

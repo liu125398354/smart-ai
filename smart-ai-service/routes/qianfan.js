@@ -254,6 +254,33 @@ router.post('/getChatMessagesByUser', async function (req, res) {
     }
 })
 
+router.post('/getChatMessagesByConversationId', async function (req, res) {
+    try {
+        const { conversationId } = req.body
+        if (!conversationId) {
+            return res.status(400).json({
+                success: false,
+                message: '缺少参数 conversationId'
+            })
+        }
+        // 调用数据库查询函数
+        const chatMessages = await getConversationById(conversationId)
+        // 成功返回
+        res.json({
+            success: true,
+            data: chatMessages
+        });
+
+    } catch (error) {
+        console.error('获取用户聊天记录失败:', error)
+        res.status(500).json({
+            success: false,
+            message: '服务器内部错误',
+            error: error.message
+        })
+    }
+})
+
 
 router.post('/deleteConversations', async function (req, res, next) {
     const { userId, conversationId } = req.body

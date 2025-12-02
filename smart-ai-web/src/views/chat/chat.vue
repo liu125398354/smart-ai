@@ -44,8 +44,8 @@
     </div>
     <div class="chat-record">
       <div class="toggle-container">
-        <LeftOutlined v-if="listShow" class="toggle-btn" @click="toggleBtn('left')"/>
-        <RightOutlined v-else class="toggle-btn" @click="toggleBtn('right')"/>
+        <LeftOutlined v-if="listShow" class="toggle-btn" @click="toggleBtn('left')" />
+        <RightOutlined v-else class="toggle-btn" @click="toggleBtn('right')" />
       </div>
       <div class="chat-agent">
         <a-button type="default" @click="toggleChartAgent">{{

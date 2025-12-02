@@ -5,7 +5,8 @@
 import axios from "axios"
 import { message } from "ant-design-vue"
 import { BASE_URL } from "@/config/apiConfig"
-import { getFromLocal } from "@/utils/index"
+import { getFromLocal, removeLocal } from "@/utils/index"
+import router from "@/router"
 
 const service = axios.create({
   baseURL: BASE_URL,
@@ -54,6 +55,10 @@ service.interceptors.response.use(
         return Promise.resolve(res.data)
       } else if (res.status === 400 || res.status === 500) {
         message.error(res.data.message)
+      } else if (res.status === 403) {
+        message.error(res.data.message)
+        removeLocal("token")
+        router.push("/login")
       } else {
         message.error("服务器错误，请稍后再试")
       }

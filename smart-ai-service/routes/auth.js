@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/db');
 const crypto = require('crypto');
@@ -112,5 +113,62 @@ router.post('/login', async (req, res) => {
     });
   }
 });
+
+// 微信登录
+router.post('/wxlogin', async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ success: false, message: 'code不能为空' });
+
+  try {
+    // 调用微信接口换取 openid
+    const wxRes = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
+      params: {
+        appid: process.env.WX_APPID,
+        secret: process.env.WX_APPSECRET,
+        js_code: code,
+        grant_type: 'authorization_code'
+      }
+    });
+
+    const { openid } = wxRes.data;
+    if (!openid) return res.status(500).json({ success: false, message: '微信登录失败' });
+
+    // 查找是否已有用户
+    let user = await User.findOne({ wechatOpenId: openid });
+
+    if (!user) {
+      // 新用户，创建账号
+      user = new User({
+        username: `wx_${openid.substring(0,6)}`,
+        wechatOpenId: openid
+      });
+      await user.save();
+    }
+
+    // 生成 JWT token
+    const token = jwt.sign(
+        { userId: user._id, username: user.username },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      message: '微信登录成功',
+      data: {
+        token,
+        user: {
+          id: user._id,
+          username: user.username
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: '微信登录失败' });
+  }
+});
+
 
 module.exports = router;
