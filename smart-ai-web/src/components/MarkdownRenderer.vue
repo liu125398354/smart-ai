@@ -47,48 +47,17 @@ const md = new MarkdownIt({
   }
 })
 
-md.use(texmath, {
-  engine: katex,
-  delimiters: ["dollars", "brackets", "doxygen", "gitlab", "julia", "kramdown", "beg_end"],
-  katexOptions: {
-    strict: false,
-    output: "html",
-    macros: {
-      "\\diag": "\\operatorname{diag}",
-      "\\rank": "\\operatorname{rank}"
-    },
-    throwOnError: false,
-    errorColor: "#cc0000"
-  }
-})
-
-// 修正公式前后的空行
-function fixBlockMathNewlines(mdText) {
-  // 处理 \[ 前面换行
-  mdText = mdText.replace(/(\n*)\\\[/g, (match, prevNewlines) => {
-    const count = prevNewlines.length
-    if (count >= 2) {
-      return prevNewlines + "\\[" // 已经够两个换行
-    } else {
-      return "\n".repeat(2) + "\\[" // 不够补齐到两个换行
-    }
-  })
-
-  // 处理 \] 后面至少一个换行
-  mdText = mdText.replace(/\\\](?!\n)/g, "\\]\n")
-
-  return mdText
-}
-
-/* 计算属性 */
+// 块级公式 \[...\] → $$...$$
+// 行内 \(...\) → $...$
 const safeContent = computed(() => {
-  try {
-    const rendered = md.render(fixBlockMathNewlines(props.content))
-    return DOMPurify.sanitize(rendered)
-  } catch (error) {
-    console.error("Markdown渲染错误:", error)
-    return `<div class="error">内容渲染失败</div>`
-  }
+  let processedContent = props.content
+    // 块级公式 \[...\] → $$...$$
+    .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
+    // 行内公式 \(...\) → $...$
+    .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`)
+    
+  const html = md.render(processedContent)
+  return DOMPurify.sanitize(html)
 })
 </script>
 

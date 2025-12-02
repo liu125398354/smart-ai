@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router"
 import { getFromLocal } from "@/utils/index"
-import Layout from "../layouts/index"
+import Layout from "@/layouts/index.vue"
 
 const routes = [
   {
@@ -35,7 +35,7 @@ const routes = [
       {
         path: "drawing",
         name: "drawing",
-        component: () => import(/* webpackChunkName: "about" */ "../views/drawing/drawing")
+        component: () => import(/* webpackChunkName: "about" */ "../views/drawing/drawing.vue")
       }
     ]
   }

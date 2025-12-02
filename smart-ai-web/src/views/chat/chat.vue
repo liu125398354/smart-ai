@@ -139,11 +139,10 @@ import {
   LeftOutlined,
   RightOutlined
 } from "@ant-design/icons-vue"
-import { createVNode } from "vue"
 import { message, Modal } from "ant-design-vue"
 
 // import MarkdownRenderer from "@/components/MarkdownRenderer"
-import MermaidRenderer from "@/components/MermaidRenderer"
+import MermaidRenderer from "@/components/MermaidRenderer.vue"
 import ChartRenderer from "@/components/ChartRenderer.vue"
 import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
