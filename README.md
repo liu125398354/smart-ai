@@ -21,25 +21,71 @@ chatgpt5等一系列版本出来后，就想着把每一处的细节补充一下
 7. 对数学公式进行了适配兼容显示（过程中尝试了诸多办法）
 8. 针对前端功能，后端添加相应的接口以及优化错误状态的捕获
 9. 添加了mermaid图的识别显示，并单独写了一个组件
+10. 使用Echarts完善了图表的渲染，并区分纯文本和图表消息的显示
 
 ## 目录结构
 
 ```markdown
 smart-ai
-├── smart-ai-web                       # 前端项目
+├── smart-ai-app                        # Uni-App小程序端
+│   ├── api                             # 小程序端接口封装
+│   │   ├── auth.js                     # 登录 / 注册 / Token 相关接口
+│   │   ├── chat.js                     # 聊天业务接口
+│   │   └── request.js                  # 基于 uni.request 的请求封装
+│   ├── components                      # 可复用 UI 组件
+│   │   ├── ChatView.vue                # 聊天窗口组件（展示消息流）
+│   │   └── MessageItem.vue             # 单条消息组件（文本/图片等）
+│   ├── pages                           # 小程序页面目录
+│   │   └── chat
+│   │       └── chat.vue                # 聊天主页面（入口页面）
+│   ├── static                          # 静态资源目录
+│   │   └── logo.png                    # 默认 Logo 示例
+│   ├── utils                           # 工具类（格式化工具/缓存封装）
+│   ├── wxcomponents                    # 第三方组件目录
+│   ├── App.vue                         # Uni-App 根组件
+│   ├── index.html                      # H5 端入口文件
+│   ├── main.js                         # 项目主入口
+│   ├── manifest.json                   # Uni-App 应用配置（App、小程序、H5）
+│   ├── pages.json                      # 配置所有页面路由
+│   ├── uni.promisify.adaptor.js        # 兼容 Promise 的 uni API 适配器
+│   └── uni.scss                        # 全局样式变量（主题色等）
+│
+├── smart-ai-service                    # 后端项目（Node.js + Express）
+│   ├── bin                             # 启动脚本目录
+│   ├── config                          # 配置文件目录
+│   │   └── dbConnect.js                # MongoDB 数据库连接逻辑
+│   ├── middleware                      # 中间件目录
+│   │   └── authMiddleware.js           # 统一认证鉴权
+│   ├── models                          # 数据模型（Mongoose Schema）
+│   │   └── db.js                       # Conversation 模型定义
+│   ├── public                          # 静态资源
+│   ├── routes                          # 接口文件（路由层）
+│   │   ├── auth.js                     # 登录/注册/Token 相关接口
+│   │   ├── chat.js                     # 聊天接口（AI 回复）
+│   │   ├── drawing.js                  # 绘图接口（调用大模型）
+│   │   └── qianfan.js                  # 文心千帆 API 接口
+│   ├── services                        # 业务逻辑层
+│   │   └── conversationService.js      # 对话相关业务逻辑封装
+│   ├── views                           # 页面视图（Jade 模板）
+│   ├── app.js                          # 后端入口文件
+│   ├── nodemon.json                    # Nodemon 配置文件（热更新）
+│   ├── package-lock.json
+│   └── package.json                    # 后端 NPM 配置
+│
+├── smart-ai-web                       # 前端项目（Vue3 + Vite）
 │   ├── public                         # 静态资源
 │   ├── src                            # 源代码
 │   │   ├── api                        # 接口请求
-│   │   │   ├── auth.js
-│   │   │   ├── chat.js
-│   │   │   └── drawing.js
+│   │   │   ├── auth.js                # 登录接口封装
+│   │   │   ├── chat.js                # 聊天接口封装
+│   │   │   └── drawing.js             # 绘图接口封装
 │   │   ├── assets                     # 前端资源文件
 │   │   ├── components                 # 公共组件
 │   │   │   ├── ChartRenderer.vue      # ECharts 渲染组件
-│   │   │   ├── MarkdownRenderer.vue   # 集成markdown-it的组件
-│   │   │   └── MermaidRenderer.vue    # 集成bytemd的组件
+│   │   │   ├── MarkdownRenderer.vue   # Markdown 渲染组件（Bytemd 集成）
+│   │   │   └── MermaidRenderer.vue    # Mermaid 流程图渲染组件
 │   │   ├── config                     # 配置文件目录
-│   │   │   └── apiConfig.js           # URL地址统一配置
+│   │   │   └── apiConfig.js           # URL 地址统一配置
 │   │   ├── directives                 # Vue 自定义指令
 │   │   │   └── v-ellipsis-title.js    # 悬浮显示 title
 │   │   ├── layouts                    # 布局文件
@@ -48,7 +94,7 @@ smart-ai
 │   │   │   └── index.js
 │   │   ├── service                    # 封装的服务
 │   │   │   └── axios.js               # Axios 实例封装（统一拦截器）
-│   │   ├── store                      # 状态管理
+│   │   ├── store                      # 状态管理（pinia / vuex）
 │   │   ├── utils                      # 工具函数
 │   │   ├── views                      # 页面视图
 │   │   │   ├── chat                   # 聊天页面
@@ -58,35 +104,16 @@ smart-ai
 │   │   │   ├── login                  # 登录页面
 │   │   │   │   └── Login.vue
 │   │   │   ├── EventSource.html       # 测试 EventSource（SSE）页面
-│   │   │   └── katex.html             # 测试公式渲染用页面（KaTeX）
+│   │   │   └── katex.html             # KaTeX 公式渲染测试页面
 │   │   ├── App.vue                    # 主组件
 │   │   └── main.js                    # 入口文件
-│   ├── babel.config.js                # Babel 配置
+│   ├── index.html
 │   ├── jsconfig.json                  # JS/TS 配置
 │   ├── package-lock.json
-│   ├── package.json                   # 前端配置
-│   └── vue.config.js                  # Vue CLI 配置
-├── smart-ai-service                   # 后端项目
-│   ├── bin                            # 启动脚本目录
-│   ├── config                         # 配置文件目录
-│   │   └── dbConnect.js               # MongoDB 数据库连接逻辑
-│   ├── mideleware                     # 中间件目录
-│   │   └── authMiddleware.js          # 统一认证鉴权
-│   ├── models                         # 数据模型（Mongoose Schema）
-│   │   └── db.js                      # Conversation模型定义
-│   ├── public                         # 静态资源
-│   ├── routes                         # 接口文件
-│   │   ├── auth.js
-│   │   ├── chat.js
-│   │   ├── drawing.js
-│   │   └── qianfan.js
-│   ├── services
-│   │   └── conversationService.js     # 对话相关的业务逻辑封装
-│   ├── views                          # 页面视图
-│   ├── app.js                         # 后端入口
-│   ├── nodemon.json                   # nodemon 配置
-│   ├── package-lock.json
-│   └── package.json                   # 后端配置
+│   ├── package.json                   # 前端依赖管理
+│   └── vite.config.js                 # Vite 配置
+│
+├── LICENSE
 ├── package-lock.json
 ├── package.json                       # 公共配置文件
 └── README.md
