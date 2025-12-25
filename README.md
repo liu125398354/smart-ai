@@ -94,7 +94,7 @@ smart-ai
 │   │   │   └── index.js
 │   │   ├── service                    # 封装的服务
 │   │   │   └── axios.js               # Axios 实例封装（统一拦截器）
-│   │   ├── store                      # 状态管理（pinia / vuex）
+│   │   ├── stores                     # 状态管理（pinia / vuex）
 │   │   ├── utils                      # 工具函数
 │   │   ├── views                      # 页面视图
 │   │   │   ├── chat                   # 聊天页面
