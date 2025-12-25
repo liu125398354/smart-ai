@@ -92,13 +92,12 @@ import { ref, reactive } from "vue"
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue"
 import { message } from "ant-design-vue"
 import { useRouter } from "vue-router"
-import { useStore } from "vuex"
+import { useUserStore } from "@/stores/user"
 import api from "@/api/auth"
-import { saveToLocal } from "@/utils/index"
 import CryptoJS from "crypto-js"
 
 const router = useRouter()
-const store = useStore()
+const userStore = useUserStore()
 const formRef = ref()
 const registerFormRef = ref()
 const loading = ref(false)
@@ -164,8 +163,8 @@ const handleLogin = async () => {
     })
 
     if (res.success) {
-      store.commit("setToken", res.data.token)
-      store.commit("setUserInfo", res.data.user)
+      userStore.setToken(res.data.token)
+      userStore.setUserInfo(res.data.user)
 
       message.success("登录成功")
       router.push("/chat")

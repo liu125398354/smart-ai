@@ -1,5 +1,5 @@
 // v-ellipsis-title.js
-import store from "@/store"
+import { useRecordStore } from "@/stores/record"
 import { watch } from "vue"
 
 // 核心判断函数，独立出来，便于 mounted和updated 使用
@@ -17,9 +17,10 @@ export default {
     el._overflowChecked = false
     el._io = null
 
-    // 监听 store.enableEllipsisObserver，当变为 true 时再挂载 IntersectionObserver
+    // 监听 record store中的enableEllipsisObserver，当变为 true 时再挂载 IntersectionObserver
+    const recordStore = useRecordStore()
     watch(
-      () => store.state.record.enableEllipsisObserver,
+      () => recordStore.enableEllipsisObserver,
       (enabled) => {
         if (enabled && !el._io) {
           // 1️⃣ IntersectionObserver：首次进入视口时判断
@@ -49,7 +50,8 @@ export default {
 
     // 2️⃣ ResizeObserver：监听元素自身尺寸变化
     const resizeObserver = new ResizeObserver(() => {
-      if (store.state.record.enableEllipsisObserver) {
+      const recordStore = useRecordStore()
+      if (recordStore.enableEllipsisObserver) {
         checkOverflow(el)
       }
     })
@@ -59,7 +61,8 @@ export default {
 
   updated(el) {
     // 文字内容更新时仍然重新判断
-    if (store.state.record.enableEllipsisObserver) {
+    const recordStore = useRecordStore()
+    if (recordStore.enableEllipsisObserver) {
       checkOverflow(el)
     }
   },

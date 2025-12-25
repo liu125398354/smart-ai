@@ -122,7 +122,8 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from "vue"
-import { useStore } from "vuex"
+import { useChatStore } from "@/stores/chat"
+import { useUserStore } from "@/stores/user"
 import { parseTime } from "@/utils"
 import { BASE_URL } from "@/config/apiConfig"
 
@@ -148,7 +149,8 @@ import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
 import axios from "axios"
 
-const store = useStore()
+const chatStore = useChatStore()
+const userStore = useUserStore()
 const chatScroll = ref(null)
 const text = ref("")
 const sendDisabled = ref(false)
@@ -168,20 +170,23 @@ let debounceTimer = ref(null) // 防抖
 let controller = new AbortController()
 let signal = controller.signal
 
-const messageList = computed(() => store.getters.getMessageData)
-const conversationsList = computed(() => store.getters.getConversationsData)
-const selectedConversationId = computed(() => store.getters.getSelectedConversationId)
-const userId = computed(() => store.getters.getUserId)
-const token = computed(() => store.getters.getToken)
+const messageList = computed(() => chatStore.getMessageData)
+const conversationsList = computed(() => chatStore.getConversationsData)
+const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
+const userId = computed(() => userStore.getUserId)
+const token = computed(() => userStore.getToken)
 
 onMounted(async () => {
-  store.commit("setMessage")
+  chatStore.setMessage()
   try {
     await initConversationsList()
     await initChatMessages()
-    store.commit("setSelectedConversationId", selectedConversationId.value)
+    chatStore.setSelectedConversationId(selectedConversationId.value)
     await scrollToSelectedPosition() // 数据列表加载选中后，再滚动
-    store.commit("setEnableEllipsisObserver", true) // 设置初始化是否滚动完成的标志
+    import("@/stores/record").then(module => {
+      const recordStore = module.useRecordStore()
+      recordStore.setEnableEllipsisObserver(true)
+    })  // 设置初始化是否滚动完成的标志
   } catch (error) {
     console.error("加载列表失败:", error)
   }
@@ -190,11 +195,11 @@ onMounted(async () => {
 })
 
 function initConversationsList() {
-  return store.dispatch("getConversationsList")
+  return chatStore.getConversationsList({ userId: userId.value })
 }
 
 function initChatMessages() {
-  return store.dispatch("getChatMessages")
+  return chatStore.getChatMessages({ userId: userId.value })
 }
 
 function initScroll() {
@@ -314,7 +319,7 @@ async function sendMessage() {
   }
   sendDisabled.value = true
   let params = {
-    conversationId: store.state.chat.selectedConversationId,
+    conversationId: chatStore.selectedConversationId,
     userId: userId.value,
     role: "user",
     content: text.value,
@@ -355,9 +360,9 @@ async function sendMessage() {
       console.log("New dialog ID:", newDialogId)
       params.conversationId = newDialogId
       initConversationsList()
-      store.commit("setSelectedConversationId", newDialogId)
+      chatStore.setSelectedConversationId(newDialogId)
     }
-    store.commit("addMessage", params)
+    chatStore.addMessage(params)
     if (!chatScroll.value) {
       initScroll()
     }
@@ -381,7 +386,7 @@ async function sendMessage() {
       // 这里将 chunk 直接输出，并累加
       totalMessage += chunk
       // 将内容逐步更新到页面
-      store.commit("updateMessage", {
+      chatStore.updateMessage({
         conversationId: params.conversationId,
         message: totalMessage
       })
@@ -392,7 +397,7 @@ async function sendMessage() {
       try {
         const payload = extractChartJson(totalMessage)
         if (payload && payload.type && payload.options) {
-          store.commit("convertLastAssistantToChart", {
+          chatStore.convertLastAssistantToChart({
             conversationId: params.conversationId,
             chartPayload: payload
           })
@@ -450,7 +455,7 @@ async function sendMessage() {
 // 创建新对话
 function createConversation() {
   cancelRequest()
-  store.commit("setSelectedConversationId", null)
+  chatStore.setSelectedConversationId(null)
   // 每次开始新对话时，messageList数据都会清空，scroll就不会起作用，
   // 所以将scroll置空，以便接下来对话中可以不重复的重新初始化
   chatScroll.value = null
@@ -458,7 +463,7 @@ function createConversation() {
 // 选择对话
 function selectConversation(id) {
   cancelRequest()
-  store.commit("setSelectedConversationId", id)
+  chatStore.setSelectedConversationId(id)
   if (!chatScroll.value) {
     initScroll()
   }
@@ -529,8 +534,8 @@ function showDeleteConfirm(index, conversationId) {
         .delConversations(params)
         .then((res) => {
           if (res.code === 0) {
-            store.commit("delConversationsData", index)
-            store.commit("delMessage", conversationId)
+            chatStore.delConversationsData(index)
+            chatStore.delMessage(conversationId)
             scrollBottom()
             message.success(res.message)
           }

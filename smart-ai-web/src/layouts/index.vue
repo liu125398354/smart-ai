@@ -26,10 +26,10 @@
 <script setup>
 import { h, ref, watch, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { useStore } from "vuex"
+import { useUserStore } from "@/stores/user"
 import { AliwangwangOutlined, EditOutlined, BarChartOutlined } from "@ant-design/icons-vue"
 
-const store = useStore()
+const userStore = useUserStore()
 const current = ref([useRoute().name])
 const items = ref([
   {
@@ -47,7 +47,7 @@ const items = ref([
 ])
 const router = useRouter()
 
-const userInfo = computed(() => store.getters.getUserInfo)
+const userInfo = computed(() => userStore.getUserInfo)
 
 function switchPage(item) {
   router.push({ path: item.key })
@@ -55,7 +55,7 @@ function switchPage(item) {
 
 function handleLogout() {
   // 清除store中的用户信息
-  store.commit("clearUserInfo")
+  userStore.clearUserInfo()
 
   // 跳转到登录页
   router.push("/login")

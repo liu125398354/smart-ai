@@ -1,8 +1,8 @@
 /**
  * Created by liunannan on 2023/08/16.
  */
+import { defineStore } from "pinia"
 import { saveToLocal, getFromLocal, removeLocal } from "@/utils/index"
-import { v4 as uuidv4 } from "uuid"
 
 // 初始化用户信息
 function initUserInfo() {
@@ -21,28 +21,12 @@ function initUserInfo() {
   return null
 }
 
-const user = {
-  state: {
+export const useUserStore = defineStore("user", {
+  state: () => ({
     token: getFromLocal("token") || "",
     userInfo: initUserInfo()
-  },
-  mutations: {
-    setToken(state, token) {
-      state.token = token
-      saveToLocal("token", token)
-    },
-    setUserInfo(state, userInfo) {
-      state.userInfo = userInfo
-      saveToLocal("userInfo", userInfo)
-    },
-    clearUserInfo(state) {
-      state.userInfo = null
-      // 清除本地存储
-      removeLocal("token")
-      removeLocal("userInfo")
-    }
-  },
-  actions: {},
+  }),
+  
   getters: {
     getUserId: (state) => {
       return state.userInfo ? state.userInfo.id : null
@@ -53,7 +37,22 @@ const user = {
     getToken: (state) => {
       return state.token
     }
+  },
+  
+  actions: {
+    setToken(token) {
+      this.token = token
+      saveToLocal("token", token)
+    },
+    setUserInfo(userInfo) {
+      this.userInfo = userInfo
+      saveToLocal("userInfo", userInfo)
+    },
+    clearUserInfo() {
+      this.userInfo = null
+      // 清除本地存储
+      removeLocal("token")
+      removeLocal("userInfo")
+    }
   }
-}
-
-export default user
+})
