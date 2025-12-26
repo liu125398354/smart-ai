@@ -38,6 +38,11 @@ const routes = [
         component: () => import(/* webpackChunkName: "about" */ "../views/drawing/drawing.vue")
       }
     ]
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/ErrorPages/404.vue")
   }
 ]
 
@@ -52,13 +57,9 @@ router.beforeEach((to, from, next) => {
   // 需要认证的路由
   if (to.meta.requiresAuth && !token) {
     next("/login")
-  }
-  // 已登录用户访问登录页时重定向到首页
-  else if (to.meta.requiresGuest && token) {
+  } else if (to.meta.requiresGuest && token) {
     next("/")
-  }
-  // 其他情况放行
-  else {
+  } else {
     next()
   }
 })
