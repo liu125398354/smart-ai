@@ -1,8 +1,14 @@
 <template>
   <div class="drawing-wrapper">
     <div class="drawing-left">
-      <a-form ref="formRef" :model="formState" :rules="rules">
-        <div class="prompt">提示词</div>
+      <a-form
+        ref="formRef"
+        :model="formState"
+        :rules="rules"
+      >
+        <div class="prompt">
+          提示词
+        </div>
         <a-form-item name="prompt">
           <a-textarea
             v-model:value="formState.prompt"
@@ -12,7 +18,9 @@
             :maxlength="300"
           />
         </a-form-item>
-        <div class="prompt">反向提示词</div>
+        <div class="prompt">
+          反向提示词
+        </div>
         <a-form-item name="negativePrompt">
           <a-textarea
             v-model:value="formState.negativePrompt"
@@ -24,21 +32,21 @@
         </a-form-item>
         <a-form-item label="图片分辨率">
           <a-input-number
-            class="number"
             v-model:value="formState.width"
+            class="number"
             addon-before="宽"
             min="64"
             max="2048"
             @blur="widthBlur"
-          ></a-input-number>
+          />
           <a-input-number
-            class="number"
             v-model:value="formState.height"
+            class="number"
             addon-before="高"
             min="64"
             max="2048"
             @blur="heightBlur"
-          ></a-input-number>
+          />
         </a-form-item>
         <a-form-item label="数量">
           <a-slider
@@ -52,15 +60,25 @@
               <template v-if="point === 100">
                 <strong>{{ label }}</strong>
               </template>
-              <template v-else>{{ label }}</template>
+              <template v-else>
+                {{ label }}
+              </template>
             </template>
           </a-slider>
         </a-form-item>
       </a-form>
-      <div class="generated" @click="makePicture">生成图片</div>
+      <div
+        class="generated"
+        @click="makePicture"
+      >
+        生成图片
+      </div>
     </div>
     <div class="drawing-right">
-      <div class="progress" v-if="visible">
+      <div
+        v-if="visible"
+        class="progress"
+      >
         <a-progress
           :percent="progress"
           :stroke-color="{
@@ -68,13 +86,16 @@
             to: '#87d068'
           }"
           status="active"
-          :strokeWidth="15"
-          :showInfo="false"
+          :stroke-width="15"
+          :show-info="false"
         />
         <div>正在生成图片中... {{ progress }}%</div>
       </div>
       <div class="img-wrapper">
-        <div v-for="(item, index) in images.length > 0 ? images : currentImage" :key="index">
+        <div
+          v-for="(item, index) in images.length > 0 ? images : currentImage"
+          :key="index"
+        >
           <a-image :src="'data:image/png;base64,' + item" />
         </div>
       </div>
@@ -83,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive } from "vue"
 import { v4 as uuidv4 } from "uuid"
 import drawingApic from "@/api/drawing"
 

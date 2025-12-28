@@ -1,5 +1,9 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="markdown-body" v-html="safeContent"></div>
+  <div
+    class="markdown-body"
+    v-html="safeContent"
+  />
 </template>
 
 <script setup>
@@ -11,10 +15,7 @@ import "highlight.js/styles/atom-one-dark.css"
 // import 'highlight.js/styles/github.css'
 
 import MarkdownIt from "markdown-it"
-import mk from "markdown-it-katex"
-import texmath from "markdown-it-texmath"
 import "katex/dist/katex.min.css"
-import katex from "katex"
 
 import DOMPurify from "dompurify"
 
@@ -55,7 +56,7 @@ const safeContent = computed(() => {
     .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
     // 行内公式 \(...\) → $...$
     .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`)
-    
+
   const html = md.render(processedContent)
   return DOMPurify.sanitize(html)
 })

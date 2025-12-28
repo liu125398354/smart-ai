@@ -1,6 +1,9 @@
 <template>
   <div class="markdown-body-custom">
-    <Viewer :value="safeContent" :plugins="plugins" />
+    <Viewer
+      :value="safeContent"
+      :plugins="plugins"
+    />
   </div>
 </template>
 

@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import eslintPlugin from 'vite-plugin-eslint'
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import path from 'path';
 
@@ -13,6 +14,14 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       vue(),
+      eslintPlugin({
+        // 开发模式下在控制台显示警告和错误
+        cache: false,
+        include: ['src/**/*.js', 'src/**/*.vue'],
+        emitWarning: true,
+        emitError: true,
+        lintOnStart: true // 启动时检查所有文件
+      }),
       vueJsx()
     ],
 

@@ -1,5 +1,8 @@
 <template>
-  <div ref="root" :style="{ width: '100%', height }"></div>
+  <div
+    ref="root"
+    :style="{ width: '100%', height }"
+  />
 </template>
 
 <script setup>

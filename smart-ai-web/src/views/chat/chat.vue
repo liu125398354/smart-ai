@@ -1,8 +1,16 @@
 <template>
   <div class="chat-container">
-    <div class="chat-list" :class="{ 'list-hide': listShow === false }">
+    <div
+      class="chat-list"
+      :class="{ 'list-hide': listShow === false }"
+    >
       <div class="top-new">
-        <a-button type="dashed" @click="createConversation">开启新对话</a-button>
+        <a-button
+          type="dashed"
+          @click="createConversation"
+        >
+          开启新对话
+        </a-button>
       </div>
       <ul class="list">
         <li
@@ -15,82 +23,129 @@
           <MessageOutlined />
           <div
             v-if="item.conversationId !== selectedConversationId || !isEdit"
-            class="part-text"
             v-ellipsis-title
+            class="part-text"
           >
             {{ item.conversationName }}
           </div>
           <a-input
-            ref="nameInput"
             v-if="item.conversationId === selectedConversationId && isEdit"
+            ref="nameInput"
             v-model:value="item.conversationName"
             @blur="inputBlur(index, item)"
-            @pressEnter="inputEnter(index, item)"
+            @press-enter="inputEnter(index, item)"
           />
           <EditOutlined
             v-if="item.conversationId === selectedConversationId && !isEdit"
             @click.stop="editConversationName(index, item)"
-          ></EditOutlined>
+          />
           <DeleteOutlined
             v-if="item.conversationId === selectedConversationId && !isEdit"
             @click="showDeleteConfirm(index, item.conversationId)"
-          >
-          </DeleteOutlined>
+          />
           <SaveOutlined
             v-if="item.conversationId === selectedConversationId && isEdit"
-          ></SaveOutlined>
+          />
         </li>
       </ul>
     </div>
     <div class="chat-record">
       <div class="toggle-container">
-        <LeftOutlined v-if="listShow" class="toggle-btn" @click="toggleBtn('left')" />
-        <RightOutlined v-else class="toggle-btn" @click="toggleBtn('right')" />
+        <LeftOutlined
+          v-if="listShow"
+          class="toggle-btn"
+          @click="toggleBtn('left')"
+        />
+        <RightOutlined
+          v-else
+          class="toggle-btn"
+          @click="toggleBtn('right')"
+        />
       </div>
       <div class="chat-agent">
-        <a-button type="default" @click="toggleChartAgent">{{
-          showChartAgent ? "关闭图表智能体" : "开启图表智能体"
-        }}</a-button>
-        <span v-if="showChartAgent" style="color: #999">已开启：直接用自然语言描述要画的图表</span>
+        <a-button
+          type="default"
+          @click="toggleChartAgent"
+        >
+          {{
+            showChartAgent ? "关闭图表智能体" : "开启图表智能体"
+          }}
+        </a-button>
+        <span
+          v-if="showChartAgent"
+          style="color: #999"
+        >已开启：直接用自然语言描述要画的图表</span>
       </div>
-      <div v-if="messageList.length === 0" class="no-message">
+      <div
+        v-if="messageList.length === 0"
+        class="no-message"
+      >
         你好，我是chatgpt，很高兴见到你！
       </div>
-      <div v-else class="chat-wrapper">
+      <div
+        v-else
+        class="chat-wrapper"
+      >
         <ul class="chat-ul">
-          <li class="chat-item" v-for="(item, index) in messageList" :key="index">
-            <div class="chat-right" v-if="item.role === 'user'">
+          <li
+            v-for="(item, index) in messageList"
+            :key="index"
+            class="chat-item"
+          >
+            <div
+              v-if="item.role === 'user'"
+              class="chat-right"
+            >
               <div>
                 <span class="avatar my">我</span>
               </div>
               <div class="chat-right-content">
-                <p class="chat-time chat-right-time">{{ parseTime(item.createTime) }}</p>
-                <mermaid-renderer class="chat-content" :content="item.content" />
+                <p class="chat-time chat-right-time">
+                  {{ parseTime(item.createTime) }}
+                </p>
+                <mermaid-renderer
+                  class="chat-content"
+                  :content="item.content"
+                />
                 <div class="chat-copy">
-                  <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
+                  <span
+                    class="copy"
+                    @click="copyText(item.content)"
+                  ><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
                 </div>
               </div>
             </div>
-            <div class="chat-left" v-else>
+            <div
+              v-else
+              class="chat-left"
+            >
               <div>
                 <span class="avatar">AI</span>
               </div>
               <div class="chat-left-content">
-                <p class="chat-time">{{ parseTime(item.createTime) }}</p>
+                <p class="chat-time">
+                  {{ parseTime(item.createTime) }}
+                </p>
                 <template v-if="item.isChart && item.chartPayload">
                   <chart-renderer
                     :type="item.chartPayload.type"
                     :options="item.chartPayload.options"
                     height="520px"
-                    :initialWidth="720"
+                    :initial-width="720"
                   />
                 </template>
                 <template v-else>
-                  <mermaid-renderer class="chat-marked" :content="item.content" />
+                  <mermaid-renderer
+                    class="chat-marked"
+                    :content="item.content"
+                  />
                 </template>
                 <div class="chat-copy">
-                  <span class="copy" @click="copyText(item.content)"><CopyOutlined />复制</span>
+                  <span
+                    class="copy"
+                    @click="copyText(item.content)"
+                  ><CopyOutlined />复制</span>
                   <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
                 </div>
               </div>
@@ -108,7 +163,12 @@
           />
         </div>
         <div class="chat-send">
-          <a-button :disabled="sendDisabled" type="primary" shape="round" @click="sendMessage">
+          <a-button
+            :disabled="sendDisabled"
+            type="primary"
+            shape="round"
+            @click="sendMessage"
+          >
             <template #icon>
               <SendOutlined />
             </template>
@@ -140,14 +200,13 @@ import {
   LeftOutlined,
   RightOutlined
 } from "@ant-design/icons-vue"
+import { createVNode } from 'vue';
 import { message, Modal } from "ant-design-vue"
 
 // import MarkdownRenderer from "@/components/MarkdownRenderer"
 import MermaidRenderer from "@/components/MermaidRenderer.vue"
 import ChartRenderer from "@/components/ChartRenderer.vue"
-import { v4 as uuidv4 } from "uuid"
 import chatApi from "@/api/chat"
-import axios from "axios"
 
 const chatStore = useChatStore()
 const userStore = useUserStore()
@@ -157,7 +216,6 @@ const sendDisabled = ref(false)
 const synthesis = ref(null)
 const showChartAgent = ref(false)
 let listShow = ref(true)
-let eventSource = null
 let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
@@ -258,7 +316,7 @@ function extractChartJson(text) {
   try {
     const obj = JSON.parse(s)
     if (obj && obj.type && obj.options) return obj
-  } catch (e) {}
+  } catch (e) { /* empty */ }
   // 正则扫描第一个大括号对象片段
   const candidates = []
   const stack = []
@@ -277,7 +335,7 @@ function extractChartJson(text) {
     try {
       const obj = JSON.parse(part)
       if (obj && obj.type && obj.options) return obj
-    } catch (e) {}
+    } catch (e) { /* empty */ }
   }
   return null
 }
@@ -406,7 +464,7 @@ async function sendMessage() {
             requestAnimationFrame(() => {
               try {
                 window.dispatchEvent(new Event("resize"))
-              } catch (e) {}
+              } catch (e) { /* empty */ }
             })
           })
         }
@@ -540,7 +598,7 @@ function showDeleteConfirm(index, conversationId) {
             message.success(res.message)
           }
         })
-        .catch((error) => {})
+        .catch(() => {})
     },
     onCancel() {
       console.log("Cancel")
@@ -602,7 +660,7 @@ function inputEnter(index, item) {
         message.success(res.message)
       }
     })
-    .catch((error) => {})
+    .catch(() => {})
 }
 
 function copyText(text) {

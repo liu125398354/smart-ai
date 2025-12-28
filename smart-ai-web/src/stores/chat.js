@@ -24,16 +24,6 @@ export const useChatStore = defineStore("chat", {
         return state.messageList
       }
     },
-    getChartsMessageData: (state) => {
-      let data =
-        (state.chartsMessageList.length > 0 ? state.chartsMessageList : "") ||
-        getFromLocal("chartsMessage")
-      if (data) {
-        return data
-      } else {
-        return state.chartsMessageList
-      }
-    },
     getConversationsData: (state) => {
       return state.conversationsList
     },
@@ -75,12 +65,6 @@ export const useChatStore = defineStore("chat", {
         saveToLocal("chatMessage", this.messageList)
       }
     },
-    
-    addChartsMessage(message) {
-      this.chartsMessageList.push(message)
-      saveToLocal("chartsMessage", this.chartsMessageList)
-    },
-    
     setConversationsData(data) {
       this.conversationsList = data
     },
@@ -130,27 +114,6 @@ export const useChatStore = defineStore("chat", {
         saveToLocal("chatMessage", this.messageList)
       }
     },
-    
-    updateChartsMessage(params) {
-      const { uuid, message, flag } = params
-
-      const index = this.chartsMessageList.findIndex((item) => item.uuid === uuid)
-      if (index !== -1) {
-        this.chartsMessageList[index].content = message
-        this.chartsMessageList[index].end = flag
-        saveToLocal("chartsMessage", this.chartsMessageList)
-      } else {
-        this.chartsMessageList.push({
-          uuid: uuid,
-          content: message,
-          role: "assistant",
-          createTime: new Date().getTime(),
-          end: flag
-        })
-        saveToLocal("chartsMessage", this.chartsMessageList)
-      }
-    },
-    
     setMessage(message) {
       if (Array.isArray(message) && message.length > 0) {
         saveToLocal("chatMessage", message)
@@ -162,14 +125,6 @@ export const useChatStore = defineStore("chat", {
         }
       }
     },
-    
-    setChartsMessage(message) {
-      let data = getFromLocal("chartsMessage")
-      if (data) {
-        this.chartsMessageList = data
-      }
-    },
-    
     setSelectedConversationId(id) {
       this.selectedConversationId = id
       saveToLocal("selectedConversationId", id)

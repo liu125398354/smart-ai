@@ -101,6 +101,8 @@ smart-ai
 │   │   │   │   └── chat.vue
 │   │   │   ├── drawing                # 绘图页面
 │   │   │   │   └── drawing.vue
+│   │   │   ├── ErrorPages             # 未匹配路由页面
+│   │   │   │   └── 404.vue
 │   │   │   ├── login                  # 登录页面
 │   │   │   │   └── Login.vue
 │   │   │   ├── EventSource.html       # 测试 EventSource（SSE）页面

@@ -2,16 +2,45 @@
   <div class="err-container">
     <div class="err-wrapper">
       <div class="err-left">
-        <img class="err-pic" :src="pic404" loading="lazy" alt="404"/>
-        <img class="pic-404-child left" :src="pic404Cloud" alt="404" loading="lazy">
-        <img class="pic-404-child mid" :src="pic404Cloud" alt="404" loading="lazy">
-        <img class="pic-404-child right" :src="pic404Cloud" alt="404" loading="lazy">
+        <img
+          class="err-pic"
+          :src="pic404"
+          loading="lazy"
+          alt="404"
+        >
+        <img
+          class="pic-404-child left"
+          :src="pic404Cloud"
+          alt="404"
+          loading="lazy"
+        >
+        <img
+          class="pic-404-child mid"
+          :src="pic404Cloud"
+          alt="404"
+          loading="lazy"
+        >
+        <img
+          class="pic-404-child right"
+          :src="pic404Cloud"
+          alt="404"
+          loading="lazy"
+        >
       </div>
       <div class="err-right">
-        <div class="err-page">Page Not Found</div>
-        <div class="err-not-found">您访问的页面可能被删除或者不存在了</div>
+        <div class="err-page">
+          Page Not Found
+        </div>
+        <div class="err-not-found">
+          您访问的页面可能被删除或者不存在了
+        </div>
         <div class="err-index">
-          <a-button class="back-btn" type="primary" shape="round" @click="returnIndex">
+          <a-button
+            class="back-btn"
+            type="primary"
+            shape="round"
+            @click="returnIndex"
+          >
             返回首页
           </a-button>
         </div>

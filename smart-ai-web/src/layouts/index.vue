@@ -3,31 +3,38 @@
     <a-layout>
       <a-layout-header class="header">
         <a-menu
-          v-model:selectedKeys="current"
+          v-model:selected-keys="current"
           mode="horizontal"
           :items="items"
-          @click="switchPage"
           class="menu"
+          @click="switchPage"
         />
-        <div class="user-info" v-if="userInfo">
+        <div
+          v-if="userInfo"
+          class="user-info"
+        >
           <span>欢迎, {{ userInfo.username }}</span>
-          <a-button type="primary" @click="handleLogout" style="margin-left: 15px"
-            >退出登录</a-button
+          <a-button
+            type="primary"
+            style="margin-left: 15px"
+            @click="handleLogout"
           >
+            退出登录
+          </a-button>
         </div>
       </a-layout-header>
       <a-layout-content>
-        <router-view></router-view>
+        <router-view />
       </a-layout-content>
     </a-layout>
   </div>
 </template>
 
 <script setup>
-import { h, ref, watch, computed } from "vue"
+import { h, ref, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { useUserStore } from "@/stores/user"
-import { AliwangwangOutlined, EditOutlined, BarChartOutlined } from "@ant-design/icons-vue"
+import { AliwangwangOutlined, EditOutlined } from "@ant-design/icons-vue"
 
 const userStore = useUserStore()
 const current = ref([useRoute().name])

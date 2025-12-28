@@ -7,18 +7,18 @@
       </div>
 
       <a-form
+        ref="formRef"
         :model="formState"
         :rules="rules"
-        ref="formRef"
         class="login-form"
         @finish="handleLogin"
       >
         <a-form-item name="username">
           <a-input
-            size="large"
             v-model:value="formState.username"
+            size="large"
             placeholder="请输入用户名或邮箱"
-            @pressEnter="handleLogin"
+            @press-enter="handleLogin"
           >
             <template #prefix>
               <UserOutlined />
@@ -28,10 +28,10 @@
 
         <a-form-item name="password">
           <a-input-password
-            size="large"
             v-model:value="formState.password"
+            size="large"
             placeholder="请输入密码"
-            @pressEnter="handleLogin"
+            @press-enter="handleLogin"
           >
             <template #prefix>
               <LockOutlined />
@@ -54,7 +54,10 @@
 
         <div class="login-footer">
           <a @click="showRegister = true">立即注册</a>
-          <a href="#" style="margin-left: 20px">忘记密码？</a>
+          <a
+            href="#"
+            style="margin-left: 20px"
+          >忘记密码？</a>
         </div>
       </a-form>
     </div>
@@ -63,23 +66,39 @@
     <a-modal
       v-model:open="showRegister"
       title="用户注册"
-      @ok="handleRegister"
       :confirm-loading="registerLoading"
+      @ok="handleRegister"
     >
-      <a-form :model="registerForm" :rules="registerRules" ref="registerFormRef">
-        <a-form-item label="用户名" name="username">
+      <a-form
+        ref="registerFormRef"
+        :model="registerForm"
+        :rules="registerRules"
+      >
+        <a-form-item
+          label="用户名"
+          name="username"
+        >
           <a-input v-model:value="registerForm.username" />
         </a-form-item>
 
-        <a-form-item label="邮箱" name="email">
+        <a-form-item
+          label="邮箱"
+          name="email"
+        >
           <a-input v-model:value="registerForm.email" />
         </a-form-item>
 
-        <a-form-item label="密码" name="password">
+        <a-form-item
+          label="密码"
+          name="password"
+        >
           <a-input-password v-model:value="registerForm.password" />
         </a-form-item>
 
-        <a-form-item label="确认密码" name="confirmPassword">
+        <a-form-item
+          label="确认密码"
+          name="confirmPassword"
+        >
           <a-input-password v-model:value="registerForm.confirmPassword" />
         </a-form-item>
       </a-form>
@@ -95,7 +114,6 @@ import { useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 import api from "@/api/auth"
 import CryptoJS from "crypto-js"
-
 const router = useRouter()
 const userStore = useUserStore()
 const formRef = ref()
