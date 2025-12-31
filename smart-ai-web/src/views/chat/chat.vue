@@ -1,16 +1,8 @@
 <template>
   <div class="chat-container">
-    <div
-      class="chat-list"
-      :class="{ 'list-hide': listShow === false }"
-    >
+    <div class="chat-list" :class="{ 'list-hide': listShow === false }">
       <div class="top-new">
-        <a-button
-          type="dashed"
-          @click="createConversation"
-        >
-          开启新对话
-        </a-button>
+        <a-button type="dashed" @click="createConversation">开启新对话</a-button>
       </div>
       <ul class="list">
         <li
@@ -43,59 +35,28 @@
             v-if="item.conversationId === selectedConversationId && !isEdit"
             @click="showDeleteConfirm(index, item.conversationId)"
           />
-          <SaveOutlined
-            v-if="item.conversationId === selectedConversationId && isEdit"
-          />
+          <SaveOutlined v-if="item.conversationId === selectedConversationId && isEdit" />
         </li>
       </ul>
     </div>
     <div class="chat-record">
       <div class="toggle-container">
-        <LeftOutlined
-          v-if="listShow"
-          class="toggle-btn"
-          @click="toggleBtn('left')"
-        />
-        <RightOutlined
-          v-else
-          class="toggle-btn"
-          @click="toggleBtn('right')"
-        />
+        <LeftOutlined v-if="listShow" class="toggle-btn" @click="toggleBtn('left')" />
+        <RightOutlined v-else class="toggle-btn" @click="toggleBtn('right')" />
       </div>
       <div class="chat-agent">
-        <a-button
-          type="default"
-          @click="toggleChartAgent"
-        >
-          {{
-            showChartAgent ? "关闭图表智能体" : "开启图表智能体"
-          }}
+        <a-button type="default" @click="toggleChartAgent">
+          {{ showChartAgent ? '关闭图表智能体' : '开启图表智能体' }}
         </a-button>
-        <span
-          v-if="showChartAgent"
-          style="color: #999"
-        >已开启：直接用自然语言描述要画的图表</span>
+        <span v-if="showChartAgent" style="color: #999">已开启：直接用自然语言描述要画的图表</span>
       </div>
-      <div
-        v-if="messageList.length === 0"
-        class="no-message"
-      >
+      <div v-if="messageList.length === 0" class="no-message">
         你好，我是chatgpt，很高兴见到你！
       </div>
-      <div
-        v-else
-        class="chat-wrapper"
-      >
+      <div v-else class="chat-wrapper">
         <ul class="chat-ul">
-          <li
-            v-for="(item, index) in messageList"
-            :key="index"
-            class="chat-item"
-          >
-            <div
-              v-if="item.role === 'user'"
-              class="chat-right"
-            >
+          <li v-for="(item, index) in messageList" :key="index" class="chat-item">
+            <div v-if="item.role === 'user'" class="chat-right">
               <div>
                 <span class="avatar my">我</span>
               </div>
@@ -103,23 +64,20 @@
                 <p class="chat-time chat-right-time">
                   {{ parseTime(item.createTime) }}
                 </p>
-                <mermaid-renderer
-                  class="chat-content"
-                  :content="item.content"
-                />
+                <mermaid-renderer class="chat-content" :content="item.content" />
                 <div class="chat-copy">
-                  <span
-                    class="copy"
-                    @click="copyText(item.content)"
-                  ><CopyOutlined />复制</span>
-                  <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
+                  <span class="copy" @click="copyText(item.content)">
+                    <CopyOutlined />
+                    复制
+                  </span>
+                  <span @click="startSpeech(item.content)">
+                    <BellOutlined />
+                    朗读
+                  </span>
                 </div>
               </div>
             </div>
-            <div
-              v-else
-              class="chat-left"
-            >
+            <div v-else class="chat-left">
               <div>
                 <span class="avatar">AI</span>
               </div>
@@ -136,17 +94,17 @@
                   />
                 </template>
                 <template v-else>
-                  <mermaid-renderer
-                    class="chat-marked"
-                    :content="item.content"
-                  />
+                  <mermaid-renderer class="chat-marked" :content="item.content" />
                 </template>
                 <div class="chat-copy">
-                  <span
-                    class="copy"
-                    @click="copyText(item.content)"
-                  ><CopyOutlined />复制</span>
-                  <span @click="startSpeech(item.content)"><BellOutlined />朗读</span>
+                  <span class="copy" @click="copyText(item.content)">
+                    <CopyOutlined />
+                    复制
+                  </span>
+                  <span @click="startSpeech(item.content)">
+                    <BellOutlined />
+                    朗读
+                  </span>
                 </div>
               </div>
             </div>
@@ -163,12 +121,7 @@
           />
         </div>
         <div class="chat-send">
-          <a-button
-            :disabled="sendDisabled"
-            type="primary"
-            shape="round"
-            @click="sendMessage"
-          >
+          <a-button :disabled="sendDisabled" type="primary" shape="round" @click="sendMessage">
             <template #icon>
               <SendOutlined />
             </template>
@@ -181,13 +134,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from "vue"
-import { useChatStore } from "@/stores/chat"
-import { useUserStore } from "@/stores/user"
-import { parseTime } from "@/utils"
-import { BASE_URL } from "@/config/apiConfig"
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { useChatStore } from '@/stores/chat'
+import { useUserStore } from '@/stores/user'
+import { parseTime } from '@/utils'
+import { BASE_URL } from '@/config/apiConfig'
 
-import BScroll from "better-scroll"
+import BScroll from 'better-scroll'
 import {
   SendOutlined,
   CopyOutlined,
@@ -199,19 +152,19 @@ import {
   ExclamationCircleOutlined,
   LeftOutlined,
   RightOutlined
-} from "@ant-design/icons-vue"
-import { createVNode } from 'vue';
-import { message, Modal } from "ant-design-vue"
+} from '@ant-design/icons-vue'
+import { createVNode } from 'vue'
+import { message, Modal } from 'ant-design-vue'
 
 // import MarkdownRenderer from "@/components/MarkdownRenderer"
-import MermaidRenderer from "@/components/MermaidRenderer.vue"
-import ChartRenderer from "@/components/ChartRenderer.vue"
-import chatApi from "@/api/chat"
+import MermaidRenderer from '@/components/MermaidRenderer.vue'
+import ChartRenderer from '@/components/ChartRenderer.vue'
+import chatApi from '@/api/chat'
 
 const chatStore = useChatStore()
 const userStore = useUserStore()
 const chatScroll = ref(null)
-const text = ref("")
+const text = ref('')
 const sendDisabled = ref(false)
 const synthesis = ref(null)
 const showChartAgent = ref(false)
@@ -219,7 +172,7 @@ let listShow = ref(true)
 let isEdit = ref(false)
 let isEnter = ref(false)
 let nameInput = ref(null)
-let currentName = ref("")
+let currentName = ref('')
 let lastHeight = ref(0) // 记录滚动视口高度
 let lastScrollTime = ref(0) // 记录时间
 const throttleInterval = ref(200) // 每 50ms 最多执行一次
@@ -241,12 +194,12 @@ onMounted(async () => {
     await initChatMessages()
     chatStore.setSelectedConversationId(selectedConversationId.value)
     await scrollToSelectedPosition() // 数据列表加载选中后，再滚动
-    import("@/stores/record").then(module => {
+    import('@/stores/record').then((module) => {
       const recordStore = module.useRecordStore()
       recordStore.setEnableEllipsisObserver(true)
-    })  // 设置初始化是否滚动完成的标志
+    }) // 设置初始化是否滚动完成的标志
   } catch (error) {
-    console.error("加载列表失败:", error)
+    console.error('加载列表失败:', error)
   }
   initScroll()
   initSpeech()
@@ -262,11 +215,11 @@ function initChatMessages() {
 
 function initScroll() {
   if (messageList.value.length === 0) {
-    console.log("return")
+    console.log('return')
     return
   }
   nextTick(() => {
-    chatScroll.value = new BScroll(".chat-wrapper", {
+    chatScroll.value = new BScroll('.chat-wrapper', {
       click: true,
       scrollY: true,
       pullUpLoad: {
@@ -296,11 +249,11 @@ function toggleChartAgent() {
 }
 
 function initSpeech() {
-  if ("speechSynthesis" in window) {
+  if ('speechSynthesis' in window) {
     synthesis.value = new SpeechSynthesisUtterance()
     synthesis.value.onend = handleSpeechEnd()
   } else {
-    message.error("抱歉，你的浏览器不支持文字转语音功能")
+    message.error('抱歉，你的浏览器不支持文字转语音功能')
   }
 }
 
@@ -309,21 +262,23 @@ function extractChartJson(text) {
   if (!text) return null
   // 去掉 ```json/``` 包裹
   let s = text.trim()
-  if (s.startsWith("```") && s.endsWith("```")) {
-    s = s.replace(/^```[a-zA-Z]*\n?/, "").replace(/```$/, "")
+  if (s.startsWith('```') && s.endsWith('```')) {
+    s = s.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '')
   }
   // 快速命中：整个就是 JSON
   try {
     const obj = JSON.parse(s)
     if (obj && obj.type && obj.options) return obj
-  } catch (e) { /* empty */ }
+  } catch (e) {
+    /* empty */
+  }
   // 正则扫描第一个大括号对象片段
   const candidates = []
   const stack = []
   for (let i = 0; i < s.length; i++) {
     const ch = s[i]
-    if (ch === "{") stack.push(i)
-    else if (ch === "}" && stack.length) {
+    if (ch === '{') stack.push(i)
+    else if (ch === '}' && stack.length) {
       const start = stack.pop()
       if (stack.length === 0) {
         candidates.push(s.substring(start, i + 1))
@@ -335,7 +290,9 @@ function extractChartJson(text) {
     try {
       const obj = JSON.parse(part)
       if (obj && obj.type && obj.options) return obj
-    } catch (e) { /* empty */ }
+    } catch (e) {
+      /* empty */
+    }
   }
   return null
 }
@@ -345,11 +302,11 @@ function scrollToSelectedPosition() {
   return new Promise((resolve) => {
     // 等待 DOM 渲染完成（例如 v-for 的 li 全部出来）
     setTimeout(() => {
-      const target = document.querySelector(".selected")
+      const target = document.querySelector('.selected')
       if (target) {
         target.scrollIntoView({
-          behavior: "smooth", // 平滑滚动
-          block: "start" // 将目标元素对齐到视口顶部
+          behavior: 'smooth', // 平滑滚动
+          block: 'start' // 将目标元素对齐到视口顶部
         })
       }
       // 平滑滚动是异步动画，这里延迟一点点等待动画结束
@@ -372,14 +329,14 @@ async function sendMessage() {
     return
   }
   if (!text.value) {
-    message.warning("请输入内容")
+    message.warning('请输入内容')
     return
   }
   sendDisabled.value = true
   let params = {
     conversationId: chatStore.selectedConversationId,
     userId: userId.value,
-    role: "user",
+    role: 'user',
     content: text.value,
     createTime: new Date().getTime()
   }
@@ -387,7 +344,7 @@ async function sendMessage() {
   if (showChartAgent.value) {
     params.chartAgent = true
   }
-  text.value = ""
+  text.value = ''
   // let config = {
   //   onDownloadProgress({ event }) {
   //     console.log("下载进度-->", event)
@@ -404,18 +361,18 @@ async function sendMessage() {
   try {
     const response = await fetch(`${BASE_URL}/qianfan/getQianFanMessage`, {
       signal,
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json", // 明确指定 JSON 格式
-        Authorization: token.value ? `Bearer ${token.value}` : ""
+        'Content-Type': 'application/json', // 明确指定 JSON 格式
+        Authorization: token.value ? `Bearer ${token.value}` : ''
       },
       body: JSON.stringify(params)
     })
 
     // 从响应头中提取新的 dialogId
-    const newDialogId = response.headers.get("X-Dialog-ID")
+    const newDialogId = response.headers.get('X-Dialog-ID')
     if (newDialogId) {
-      console.log("New dialog ID:", newDialogId)
+      console.log('New dialog ID:', newDialogId)
       params.conversationId = newDialogId
       initConversationsList()
       chatStore.setSelectedConversationId(newDialogId)
@@ -427,14 +384,14 @@ async function sendMessage() {
     scrollToBottomThrottle()
     // 处理大模型返回出错的问题
     if (!response.ok) {
-      message.error("服务器出现问题，稍后再试")
+      message.error('服务器出现问题，稍后再试')
       sendDisabled.value = false
       return
     }
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
     let done = false
-    let totalMessage = ""
+    let totalMessage = ''
 
     while (!done) {
       const { value, done: doneReading } = await reader.read()
@@ -463,21 +420,23 @@ async function sendMessage() {
           nextTick(() => {
             requestAnimationFrame(() => {
               try {
-                window.dispatchEvent(new Event("resize"))
-              } catch (e) { /* empty */ }
+                window.dispatchEvent(new Event('resize'))
+              } catch (e) {
+                /* empty */
+              }
             })
           })
         }
       } catch (e) {
-        console.warn("未能解析为图表配置，将保留文本输出", e)
+        console.warn('未能解析为图表配置，将保留文本输出', e)
       }
     }
     sendDisabled.value = false
   } catch (error) {
-    if (error.name === "AbortError") {
-      console.log("请求被终止")
+    if (error.name === 'AbortError') {
+      console.log('请求被终止')
     } else {
-      console.log("发生了其他错误", error)
+      console.log('发生了其他错误', error)
     }
   }
   // let aaa = ""
@@ -563,7 +522,7 @@ function scrollToBottomThrottle() {
 // 轮询计算高度，直到高度不再变化时，才去滚动到最底部
 function scrollBottom() {
   nextTick(() => {
-    const content = document.querySelector(".chat-wrapper")
+    const content = document.querySelector('.chat-wrapper')
     const height = content.scrollHeight
     if (height !== lastHeight.value) {
       lastHeight.value = height
@@ -577,12 +536,12 @@ function scrollBottom() {
 
 function showDeleteConfirm(index, conversationId) {
   Modal.confirm({
-    title: "你确认要删除当前对话吗？",
+    title: '你确认要删除当前对话吗？',
     icon: createVNode(ExclamationCircleOutlined),
-    content: "删除后，对话不可恢复",
-    okText: "删除",
-    okType: "danger",
-    cancelText: "取消",
+    content: '删除后，对话不可恢复',
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
     onOk() {
       let params = {
         userId: userId.value,
@@ -601,7 +560,7 @@ function showDeleteConfirm(index, conversationId) {
         .catch(() => {})
     },
     onCancel() {
-      console.log("Cancel")
+      console.log('Cancel')
     }
   })
 }
@@ -638,7 +597,7 @@ function inputBlur(index, item) {
 
 function inputEnter(index, item) {
   if (!item.conversationName.trim()) {
-    message.warning("请输入对话名称")
+    message.warning('请输入对话名称')
     return
   }
   // 对话名称没有任何修改，则取消编辑的状态并返回，且不用发起请求
@@ -664,14 +623,14 @@ function inputEnter(index, item) {
 }
 
 function copyText(text) {
-  let input = document.createElement("textarea")
-  input.setAttribute("readonly", "readonly")
+  let input = document.createElement('textarea')
+  input.setAttribute('readonly', 'readonly')
   input.value = text
   document.body.appendChild(input)
   input.select()
-  if (document.execCommand("copy")) {
-    document.execCommand("copy")
-    message.success("复制成功")
+  if (document.execCommand('copy')) {
+    document.execCommand('copy')
+    message.success('复制成功')
   }
   document.body.removeChild(input)
 }
@@ -683,7 +642,7 @@ function startSpeech(text) {
 }
 
 function handleSpeechEnd() {
-  console.log("语音朗读结束")
+  console.log('语音朗读结束')
 }
 
 function stopSpeech() {
@@ -691,7 +650,7 @@ function stopSpeech() {
 }
 
 function toggleBtn(direction) {
-  listShow.value = direction !== "left"
+  listShow.value = direction !== 'left'
 }
 </script>
 
@@ -801,7 +760,8 @@ function toggleBtn(direction) {
       flex 1
       overflow hidden
     .chat-ul
-      padding 15px 15px 0px
+      padding 15px 15px 0
+
     .chat-item
       &:hover .chat-right .chat-copy
         display block

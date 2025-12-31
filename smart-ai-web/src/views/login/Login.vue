@@ -48,16 +48,13 @@
             block
             class="login-button"
           >
-            {{ loading ? "登录中..." : "登录" }}
+            {{ loading ? '登录中...' : '登录' }}
           </a-button>
         </a-form-item>
 
         <div class="login-footer">
           <a @click="showRegister = true">立即注册</a>
-          <a
-            href="#"
-            style="margin-left: 20px"
-          >忘记密码？</a>
+          <a href="#" style="margin-left: 20px">忘记密码？</a>
         </div>
       </a-form>
     </div>
@@ -69,36 +66,20 @@
       :confirm-loading="registerLoading"
       @ok="handleRegister"
     >
-      <a-form
-        ref="registerFormRef"
-        :model="registerForm"
-        :rules="registerRules"
-      >
-        <a-form-item
-          label="用户名"
-          name="username"
-        >
+      <a-form ref="registerFormRef" :model="registerForm" :rules="registerRules">
+        <a-form-item label="用户名" name="username">
           <a-input v-model:value="registerForm.username" />
         </a-form-item>
 
-        <a-form-item
-          label="邮箱"
-          name="email"
-        >
+        <a-form-item label="邮箱" name="email">
           <a-input v-model:value="registerForm.email" />
         </a-form-item>
 
-        <a-form-item
-          label="密码"
-          name="password"
-        >
+        <a-form-item label="密码" name="password">
           <a-input-password v-model:value="registerForm.password" />
         </a-form-item>
 
-        <a-form-item
-          label="确认密码"
-          name="confirmPassword"
-        >
+        <a-form-item label="确认密码" name="confirmPassword">
           <a-input-password v-model:value="registerForm.confirmPassword" />
         </a-form-item>
       </a-form>
@@ -107,13 +88,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue"
-import { UserOutlined, LockOutlined } from "@ant-design/icons-vue"
-import { message } from "ant-design-vue"
-import { useRouter } from "vue-router"
-import { useUserStore } from "@/stores/user"
-import api from "@/api/auth"
-import CryptoJS from "crypto-js"
+import { ref, reactive } from 'vue'
+import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import api from '@/api/auth'
+import CryptoJS from 'crypto-js'
 const router = useRouter()
 const userStore = useUserStore()
 const formRef = ref()
@@ -124,41 +105,41 @@ const showRegister = ref(false)
 
 // 登录表单数据
 const formState = reactive({
-  username: "",
-  password: ""
+  username: '',
+  password: ''
 })
 
 // 登录表单规则
 const rules = {
-  username: [{ required: true, message: "请输入用户名或邮箱" }],
-  password: [{ required: true, message: "请输入密码" }]
+  username: [{ required: true, message: '请输入用户名或邮箱' }],
+  password: [{ required: true, message: '请输入密码' }]
 }
 
 // 注册表单数据
 const registerForm = reactive({
-  username: "",
-  email: "",
-  password: "",
-  confirmPassword: ""
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: ''
 })
 
 // 注册表单规则
 const registerRules = {
-  username: [{ required: true, message: "请输入用户名" }],
+  username: [{ required: true, message: '请输入用户名' }],
   email: [
-    { required: true, message: "请输入邮箱" },
-    { type: "email", message: "请输入有效的邮箱地址" }
+    { required: true, message: '请输入邮箱' },
+    { type: 'email', message: '请输入有效的邮箱地址' }
   ],
   password: [
-    { required: true, message: "请输入密码" },
-    { min: 6, message: "密码至少6位" }
+    { required: true, message: '请输入密码' },
+    { min: 6, message: '密码至少6位' }
   ],
   confirmPassword: [
-    { required: true, message: "请确认密码" },
+    { required: true, message: '请确认密码' },
     {
       validator: (_, value) => {
         if (value && value !== registerForm.password) {
-          return Promise.reject("两次输入的密码不一致")
+          return Promise.reject('两次输入的密码不一致')
         }
         return Promise.resolve()
       }
@@ -184,14 +165,14 @@ const handleLogin = async () => {
       userStore.setToken(res.data.token)
       userStore.setUserInfo(res.data.user)
 
-      message.success("登录成功")
-      router.push("/chat")
+      message.success('登录成功')
+      router.push('/chat')
     } else {
-      message.error(res.message || "登录失败")
+      message.error(res.message || '登录失败')
     }
   } catch (err) {
-    console.error("登录错误:", err)
-    message.error("登录失败，请检查用户名和密码")
+    console.error('登录错误:', err)
+    message.error('登录失败，请检查用户名和密码')
   } finally {
     loading.value = false
   }
@@ -213,18 +194,18 @@ const handleRegister = async () => {
     })
 
     if (res.success) {
-      message.success("注册成功")
+      message.success('注册成功')
       showRegister.value = false
       // 清空注册表单
       Object.keys(registerForm).forEach((key) => {
-        registerForm[key] = ""
+        registerForm[key] = ''
       })
     } else {
-      message.error(res.message || "注册失败")
+      message.error(res.message || '注册失败')
     }
   } catch (err) {
-    console.error("注册错误:", err)
-    message.error("注册失败")
+    console.error('注册错误:', err)
+    message.error('注册失败')
   } finally {
     registerLoading.value = false
   }

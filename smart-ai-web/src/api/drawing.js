@@ -2,28 +2,28 @@
  * Created by liunannan on 2023/08/16.
  */
 
-import request from "@/service/axios"
+import request from '@/service/axios'
 
 export default {
   makePic(params) {
     return request({
-      url: "/draw/makePic",
-      method: "post",
+      url: '/draw/makePic',
+      method: 'post',
       data: params,
       timeout: 0
     })
   },
   getProgress(params) {
     return request({
-      url: "/draw/getProgress",
-      method: "get",
+      url: '/draw/getProgress',
+      method: 'get',
       params: params
     })
   },
   getCode(params) {
     return request({
-      url: "/draw/getCode",
-      method: "get",
+      url: '/draw/getCode',
+      method: 'get',
       params: params
     })
   }

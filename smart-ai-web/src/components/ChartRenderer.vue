@@ -1,19 +1,16 @@
 <template>
-  <div
-    ref="root"
-    :style="{ width: '100%', height }"
-  />
+  <div ref="root" :style="{ width: '100%', height }" />
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue"
-import * as echarts from "echarts"
-import "echarts-gl" // ✅ 一次性导入 echarts-gl，支持所有 3D 能力
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import * as echarts from 'echarts'
+import 'echarts-gl' // ✅ 一次性导入 echarts-gl，支持所有 3D 能力
 
 const props = defineProps({
   type: {
     type: String,
-    default: "line"
+    default: 'line'
   },
   options: {
     type: Object,
@@ -21,7 +18,7 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: "480px"
+    default: '480px'
   }
 })
 
@@ -36,7 +33,7 @@ function handleResize() {
 
 /** 判断是否是完整配置 */
 function isFullOption(opt) {
-  if (!opt || typeof opt !== "object") return false
+  if (!opt || typeof opt !== 'object') return false
   if (Array.isArray(opt.series) && opt.series.length) return true
   if (opt.xAxis || opt.yAxis || opt.geo || opt.grid3D) return true
   return false
@@ -52,9 +49,9 @@ function getOptionByType() {
 
   // ✅ 兜底模板
   const basicXY = {
-    tooltip: { trigger: "axis" },
-    xAxis: { type: "category", data: opt.xData || [] },
-    yAxis: { type: "value" },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: opt.xData || [] },
+    yAxis: { type: 'value' },
     series: [{ type: t, data: opt.yData || [] }]
   }
 
@@ -65,30 +62,30 @@ function getOptionByType() {
     const base3D = {
       tooltip: {},
       grid3D: {},
-      xAxis3D: { type: "value" },
-      yAxis3D: { type: "value" },
-      zAxis3D: { type: "value" }
+      xAxis3D: { type: 'value' },
+      yAxis3D: { type: 'value' },
+      zAxis3D: { type: 'value' }
     }
-    if (t === "bar3d") {
+    if (t === 'bar3d') {
       return {
         ...base3D,
-        visualMap: opt.visualMap || { max: 20, inRange: { color: ["#74add1", "#f46d43"] } },
+        visualMap: opt.visualMap || { max: 20, inRange: { color: ['#74add1', '#f46d43'] } },
         series: [
           {
-            type: "bar3D",
+            type: 'bar3D',
             data: opt.data || [],
-            shading: "lambert",
+            shading: 'lambert',
             itemStyle: { opacity: 0.9 }
           }
         ]
       }
     }
-    if (t === "scatter3d") {
+    if (t === 'scatter3d') {
       return {
         ...base3D,
         series: [
           {
-            type: "scatter3D",
+            type: 'scatter3D',
             data: opt.data || [],
             symbolSize: 8,
             itemStyle: { opacity: 0.8 }
@@ -96,49 +93,49 @@ function getOptionByType() {
         ]
       }
     }
-    if (t === "surface3d") {
+    if (t === 'surface3d') {
       return {
         ...base3D,
         series: [
           {
-            type: "surface",
+            type: 'surface',
             wireframe: { show: false },
-            shading: "realistic",
+            shading: 'realistic',
             data: opt.data || []
           }
         ]
       }
     }
-    if (t === "map3d" || t === "geo3d") {
+    if (t === 'map3d' || t === 'geo3d') {
       return {
         geo3D: {
-          map: opt.mapName || "china",
-          shading: "lambert",
+          map: opt.mapName || 'china',
+          shading: 'lambert',
           regionHeight: 2,
           realisticMaterial: { roughness: 0.6 },
           viewControl: { distance: 120 },
-          environment: "#000"
+          environment: '#000'
         },
         series: [
           {
-            type: "bar3D",
-            coordinateSystem: "geo3D",
+            type: 'bar3D',
+            coordinateSystem: 'geo3D',
             data: opt.data || [],
-            shading: "lambert"
+            shading: 'lambert'
           }
         ]
       }
     }
-    if (t === "globe") {
+    if (t === 'globe') {
       return {
         globe: {
           baseTexture:
             opt.baseTexture ||
-            "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/earth.jpg",
+            'https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/earth.jpg',
           heightTexture:
             opt.heightTexture ||
-            "https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/bathymetry_bw_composite_4k.jpg",
-          shading: "lambert",
+            'https://cdn.jsdelivr.net/gh/apache/echarts-examples/public/data-gl/asset/bathymetry_bw_composite_4k.jpg',
+          shading: 'lambert',
           light: {
             main: { intensity: 1.5 },
             ambient: { intensity: 0.3 }
@@ -152,14 +149,14 @@ function getOptionByType() {
   // -------------------------
   // 🌏 地图自动配置
   // -------------------------
-  if (t === "map" || t === "geo") {
-    const mapName = opt.mapName || "china"
+  if (t === 'map' || t === 'geo') {
+    const mapName = opt.mapName || 'china'
     return {
       tooltip: {},
-      visualMap: opt.visualMap || { left: "left", min: 0, max: 100 },
+      visualMap: opt.visualMap || { left: 'left', min: 0, max: 100 },
       series: [
         {
-          type: "map",
+          type: 'map',
           map: mapName,
           data: opt.data || []
         }
@@ -170,52 +167,52 @@ function getOptionByType() {
   // -------------------------
   // 📊 其他图表类型（pie/radar/sankey 等）
   // -------------------------
-  if (t === "pie") {
+  if (t === 'pie') {
     return {
-      tooltip: { trigger: "item" },
-      legend: { top: "bottom" },
+      tooltip: { trigger: 'item' },
+      legend: { top: 'bottom' },
       series: [
         {
-          type: "pie",
-          radius: ["40%", "70%"],
+          type: 'pie',
+          radius: ['40%', '70%'],
           data: opt.data || [],
-          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
+          itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
           label: { show: false },
-          emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } }
+          emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } }
         }
       ]
     }
   }
-  if (t === "radar") {
+  if (t === 'radar') {
     return {
       tooltip: {},
       radar: { indicator: opt.indicator || [] },
-      series: [{ type: "radar", data: opt.data || [] }]
+      series: [{ type: 'radar', data: opt.data || [] }]
     }
   }
-  if (t === "sankey") {
+  if (t === 'sankey') {
     return {
       series: [
         {
-          type: "sankey",
+          type: 'sankey',
           data: opt.nodes || [],
           links: opt.links || [],
-          emphasis: { focus: "adjacency" }
+          emphasis: { focus: 'adjacency' }
         }
       ]
     }
   }
-  if (t === "tree") {
+  if (t === 'tree') {
     return {
       tooltip: {},
       series: [
         {
-          type: "tree",
+          type: 'tree',
           data: opt.data ? (Array.isArray(opt.data) ? opt.data : [opt.data]) : [],
-          top: "5%",
-          left: "10%",
-          bottom: "5%",
-          right: "20%"
+          top: '5%',
+          left: '10%',
+          bottom: '5%',
+          right: '20%'
         }
       ]
     }
@@ -230,7 +227,7 @@ async function ensureMapRegistered(option) {
     const opt = props.options || {}
     const providedName =
       opt.mapName ||
-      option?.series?.find((s) => s?.type === "map")?.map ||
+      option?.series?.find((s) => s?.type === 'map')?.map ||
       option?.geo?.map ||
       option?.geo3D?.map
 
@@ -245,10 +242,10 @@ async function ensureMapRegistered(option) {
     for (const name of namesToCheck) {
       if (registeredMapNames.has(name)) continue
       let geoUrl = null
-      if (name.toLowerCase() === "china" || name === "中国") {
-        geoUrl = "https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=100000_full"
-      } else if (name.toLowerCase() === "world") {
-        geoUrl = "https://echarts.apache.org/examples/data/asset/geo/world.json"
+      if (name.toLowerCase() === 'china' || name === '中国') {
+        geoUrl = 'https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=100000_full'
+      } else if (name.toLowerCase() === 'world') {
+        geoUrl = 'https://echarts.apache.org/examples/data/asset/geo/world.json'
       }
       if (geoUrl) {
         const res = await fetch(geoUrl)
@@ -260,7 +257,7 @@ async function ensureMapRegistered(option) {
       }
     }
   } catch (e) {
-    console.warn("地图注册失败:", e)
+    console.warn('地图注册失败:', e)
   }
 }
 
@@ -269,12 +266,12 @@ async function render() {
   if (!root.value) return
   if (!instance) {
     instance = echarts.init(root.value)
-    window.addEventListener("resize", handleResize)
+    window.addEventListener('resize', handleResize)
   }
 
   try {
     const option = getOptionByType()
-    if (!option || typeof option !== "object") return
+    if (!option || typeof option !== 'object') return
 
     await ensureMapRegistered(option)
 
@@ -282,7 +279,7 @@ async function render() {
     instance.setOption(option, true)
     requestAnimationFrame(() => instance?.resize())
   } catch (e) {
-    console.error("ECharts render error:", e)
+    console.error('ECharts render error:', e)
   }
 }
 
@@ -290,7 +287,7 @@ onMounted(render)
 onBeforeUnmount(() => {
   instance?.dispose()
   instance = null
-  window.removeEventListener("resize", handleResize)
+  window.removeEventListener('resize', handleResize)
 })
 watch(() => props.options, render, { deep: true })
 </script>

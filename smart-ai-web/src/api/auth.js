@@ -1,10 +1,10 @@
-import service from "@/service/axios"
+import service from '@/service/axios'
 
 // 用户登录
 export function login(data) {
   return service({
-    url: "/auth/login",
-    method: "post",
+    url: '/auth/login',
+    method: 'post',
     data
   })
 }
@@ -12,8 +12,8 @@ export function login(data) {
 // 用户注册
 export function register(data) {
   return service({
-    url: "/auth/register",
-    method: "post",
+    url: '/auth/register',
+    method: 'post',
     data
   })
 }

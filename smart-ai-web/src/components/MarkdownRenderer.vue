@@ -1,23 +1,19 @@
-<!-- eslint-disable vue/no-v-html -->
 <template>
-  <div
-    class="markdown-body"
-    v-html="safeContent"
-  />
+  <div class="markdown-body" v-html="safeContent" />
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed } from 'vue'
 
-import "github-markdown-css/github-markdown.css"
-import hljs from "highlight.js"
-import "highlight.js/styles/atom-one-dark.css"
+import 'github-markdown-css/github-markdown.css'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/atom-one-dark.css'
 // import 'highlight.js/styles/github.css'
 
-import MarkdownIt from "markdown-it"
-import "katex/dist/katex.min.css"
+import MarkdownIt from 'markdown-it'
+import 'katex/dist/katex.min.css'
 
-import DOMPurify from "dompurify"
+import DOMPurify from 'dompurify'
 
 /* 定义属性 */
 let props = defineProps({
@@ -38,13 +34,13 @@ const md = new MarkdownIt({
         return (
           '<pre class="hljs"><code>' +
           hljs.highlight(str, { language: lang }).value +
-          "</code></pre>"
+          '</code></pre>'
         )
       } catch (err) {
-        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
+        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>'
       }
     }
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
+    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>'
   }
 })
 

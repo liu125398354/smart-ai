@@ -1,12 +1,12 @@
-import { defineConfig, loadEnv } from 'vite';
-import vue from '@vitejs/plugin-vue';
+import { defineConfig, loadEnv } from 'vite'
+import vue from '@vitejs/plugin-vue'
 import eslintPlugin from 'vite-plugin-eslint'
-import vueJsx from '@vitejs/plugin-vue-jsx';
-import path from 'path';
+import vueJsx from '@vitejs/plugin-vue-jsx'
+import path from 'path'
 
 export default defineConfig(({ mode }) => {
   // 加载对应环境的 .env 文件，例如 .env.development
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd())
 
   return {
     root: process.cwd(), // 项目根目录
@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
 
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
+        '@': path.resolve(__dirname, 'src')
       },
       extensions: ['.js', '.ts', '.vue', '.json', '.jsx', '.tsx']
     },
@@ -69,25 +69,25 @@ export default defineConfig(({ mode }) => {
           entryFileNames: 'assets/js/[name]-[hash].js',
           assetFileNames: ({ name }) => {
             if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')) {
-              return 'assets/images/[name]-[hash][extname]';
+              return 'assets/images/[name]-[hash][extname]'
             }
             if (/\.css$/.test(name ?? '')) {
-              return 'assets/css/[name]-[hash][extname]';
+              return 'assets/css/[name]-[hash][extname]'
             }
-            return 'assets/[name]-[hash][extname]';
+            return 'assets/[name]-[hash][extname]'
           },
 
           // 手动拆分 chunk，提高缓存和加载效率
           manualChunks: {
             'ant-design-vue': ['ant-design-vue'], // 独立打包 Ant Design Vue
-            'bytemd': [
+            bytemd: [
               'bytemd',
               '@bytemd/plugin-gfm',
               '@bytemd/plugin-highlight',
               '@bytemd/plugin-math',
-              '@bytemd/plugin-mermaid',
+              '@bytemd/plugin-mermaid'
             ], // 独立打包 Bytemd 及插件
-            'echarts': ['echarts', 'echarts-gl'] // 独立打包 ECharts 和 ECharts GL
+            echarts: ['echarts', 'echarts-gl'] // 独立打包 ECharts 和 ECharts GL
           }
         }
       },

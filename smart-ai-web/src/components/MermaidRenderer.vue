@@ -1,33 +1,30 @@
 <template>
   <div class="markdown-body-custom">
-    <Viewer
-      :value="safeContent"
-      :plugins="plugins"
-    />
+    <Viewer :value="safeContent" :plugins="plugins" />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue"
-import { Viewer } from "@bytemd/vue-next"
+import { computed } from 'vue'
+import { Viewer } from '@bytemd/vue-next'
 
 // 插件
-import gfm from "@bytemd/plugin-gfm"
-import highlight from "@bytemd/plugin-highlight"
-import math from "@bytemd/plugin-math"
-import mermaid from "@bytemd/plugin-mermaid"
-import breaks from "@bytemd/plugin-breaks"
-import frontmatter from "@bytemd/plugin-frontmatter"
+import gfm from '@bytemd/plugin-gfm'
+import highlight from '@bytemd/plugin-highlight'
+import math from '@bytemd/plugin-math'
+import mermaid from '@bytemd/plugin-mermaid'
+import breaks from '@bytemd/plugin-breaks'
+import frontmatter from '@bytemd/plugin-frontmatter'
 
 // 样式
-import "bytemd/dist/index.css"
-import "katex/dist/katex.min.css"
-import "highlight.js/styles/github.css"
+import 'bytemd/dist/index.css'
+import 'katex/dist/katex.min.css'
+import 'highlight.js/styles/github.css'
 
 // ✅ 让 highlight.js 认识 mermaid，避免警告
-import hljs from "highlight.js"
-hljs.registerLanguage("mermaid", function () {
-  return { name: "mermaid", contains: [] }
+import hljs from 'highlight.js'
+hljs.registerLanguage('mermaid', function () {
+  return { name: 'mermaid', contains: [] }
 })
 
 // props

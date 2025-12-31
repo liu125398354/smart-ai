@@ -1,13 +1,13 @@
 // v-ellipsis-title.js
-import { useRecordStore } from "@/stores/record"
-import { watch } from "vue"
+import { useRecordStore } from '@/stores/record'
+import { watch } from 'vue'
 
 // 核心判断函数，独立出来，便于 mounted和updated 使用
 function checkOverflow(el) {
   if (el.scrollWidth > el.clientWidth) {
-    el.setAttribute("title", el.textContent.trim())
+    el.setAttribute('title', el.textContent.trim())
   } else {
-    el.removeAttribute("title")
+    el.removeAttribute('title')
   }
 }
 

@@ -2,14 +2,14 @@
  * Created by liunannan on 2023/08/16.
  */
 
-import request from "@/service/axios"
+import request from '@/service/axios'
 
 export default {
   sendMessage(params, config) {
     return request({
       ...config,
-      url: "/chat/getMessage",
-      method: "post",
+      url: '/chat/getMessage',
+      method: 'post',
       data: params,
       timeout: 0
     })
@@ -17,37 +17,37 @@ export default {
   sendQianFan(params, config) {
     return request({
       ...config,
-      url: "/qianfan/getQianFanMessage",
-      method: "post",
+      url: '/qianfan/getQianFanMessage',
+      method: 'post',
       data: params,
       timeout: 0
     })
   },
   getConversations(params) {
     return request({
-      url: "/qianfan/getConversationsList",
-      method: "post",
+      url: '/qianfan/getConversationsList',
+      method: 'post',
       data: params
     })
   },
   getChatMessagesByUser(params) {
     return request({
-      url: "/qianfan/getChatMessagesByUser",
-      method: "post",
+      url: '/qianfan/getChatMessagesByUser',
+      method: 'post',
       data: params
     })
   },
   delConversations(params) {
     return request({
-      url: "/qianfan/deleteConversations",
-      method: "post",
+      url: '/qianfan/deleteConversations',
+      method: 'post',
       data: params
     })
   },
   modifyConversationName(params) {
     return request({
-      url: "/qianfan/modifyConversationName",
-      method: "post",
+      url: '/qianfan/modifyConversationName',
+      method: 'post',
       data: params
     })
   }

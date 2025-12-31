@@ -1,14 +1,8 @@
 <template>
   <div class="drawing-wrapper">
     <div class="drawing-left">
-      <a-form
-        ref="formRef"
-        :model="formState"
-        :rules="rules"
-      >
-        <div class="prompt">
-          提示词
-        </div>
+      <a-form ref="formRef" :model="formState" :rules="rules">
+        <div class="prompt">提示词</div>
         <a-form-item name="prompt">
           <a-textarea
             v-model:value="formState.prompt"
@@ -18,9 +12,7 @@
             :maxlength="300"
           />
         </a-form-item>
-        <div class="prompt">
-          反向提示词
-        </div>
+        <div class="prompt">反向提示词</div>
         <a-form-item name="negativePrompt">
           <a-textarea
             v-model:value="formState.negativePrompt"
@@ -67,18 +59,10 @@
           </a-slider>
         </a-form-item>
       </a-form>
-      <div
-        class="generated"
-        @click="makePicture"
-      >
-        生成图片
-      </div>
+      <div class="generated" @click="makePicture">生成图片</div>
     </div>
     <div class="drawing-right">
-      <div
-        v-if="visible"
-        class="progress"
-      >
+      <div v-if="visible" class="progress">
         <a-progress
           :percent="progress"
           :stroke-color="{
@@ -92,10 +76,7 @@
         <div>正在生成图片中... {{ progress }}%</div>
       </div>
       <div class="img-wrapper">
-        <div
-          v-for="(item, index) in images.length > 0 ? images : currentImage"
-          :key="index"
-        >
+        <div v-for="(item, index) in images.length > 0 ? images : currentImage" :key="index">
           <a-image :src="'data:image/png;base64,' + item" />
         </div>
       </div>
@@ -104,33 +85,33 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue"
-import { v4 as uuidv4 } from "uuid"
-import drawingApic from "@/api/drawing"
+import { ref, reactive } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
+import drawingApic from '@/api/drawing'
 
 const formRef = ref()
 const formState = reactive({
-  prompt: "",
-  negativePrompt: "",
+  prompt: '',
+  negativePrompt: '',
   width: 512,
   height: 512,
   batch_size: 1
 })
 const rules = ref({
-  prompt: [{ required: true, message: "请输入提示词", trigger: "blur" }]
+  prompt: [{ required: true, message: '请输入提示词', trigger: 'blur' }]
 })
 
 const marks = ref({
-  1: "1",
-  2: "2",
-  3: "3",
-  4: "4"
+  1: '1',
+  2: '2',
+  3: '3',
+  4: '4'
 })
 
 const images = ref([])
 const currentImage = ref([])
 const progress = ref(0)
-const task_id = ref("")
+const task_id = ref('')
 const visible = ref(false)
 const currentInterval = ref(null)
 
@@ -172,7 +153,7 @@ function makePicture() {
       }, 1500)
     })
     .catch((error) => {
-      console.log("error", error)
+      console.log('error', error)
     })
 }
 </script>

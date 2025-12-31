@@ -2,11 +2,11 @@
  * Created by liunannan on 2023/08/16.
  */
 
-import axios from "axios"
-import { message } from "ant-design-vue"
-import { BASE_URL } from "@/config/apiConfig"
-import { getFromLocal, removeLocal } from "@/utils/index"
-import router from "@/router"
+import axios from 'axios'
+import { message } from 'ant-design-vue'
+import { BASE_URL } from '@/config/apiConfig'
+import { getFromLocal, removeLocal } from '@/utils/index'
+import router from '@/router'
 
 const service = axios.create({
   baseURL: BASE_URL,
@@ -18,7 +18,7 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     // do something before request is sent
-    const token = getFromLocal("token")
+    const token = getFromLocal('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -26,7 +26,7 @@ service.interceptors.request.use(
   },
   (error) => {
     // do something with request error
-    console.log("request---", error) // for debug
+    console.log('request---', error) // for debug
     return Promise.reject(error)
   }
 )
@@ -57,13 +57,13 @@ service.interceptors.response.use(
         message.error(res.data.message)
       } else if (res.status === 403) {
         message.error(res.data.message)
-        removeLocal("token")
-        router.push("/login")
+        removeLocal('token')
+        router.push('/login')
       } else {
-        message.error("服务器错误，请稍后再试")
+        message.error('服务器错误，请稍后再试')
       }
     } else {
-      message.error("网络异常，请检查连接")
+      message.error('网络异常，请检查连接')
     }
     return Promise.reject(error)
   }

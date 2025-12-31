@@ -9,16 +9,9 @@
           class="menu"
           @click="switchPage"
         />
-        <div
-          v-if="userInfo"
-          class="user-info"
-        >
+        <div v-if="userInfo" class="user-info">
           <span>欢迎, {{ userInfo.username }}</span>
-          <a-button
-            type="primary"
-            style="margin-left: 15px"
-            @click="handleLogout"
-          >
+          <a-button type="primary" style="margin-left: 15px" @click="handleLogout">
             退出登录
           </a-button>
         </div>
@@ -31,25 +24,25 @@
 </template>
 
 <script setup>
-import { h, ref, computed } from "vue"
-import { useRouter, useRoute } from "vue-router"
-import { useUserStore } from "@/stores/user"
-import { AliwangwangOutlined, EditOutlined } from "@ant-design/icons-vue"
+import { h, ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { AliwangwangOutlined, EditOutlined } from '@ant-design/icons-vue'
 
 const userStore = useUserStore()
 const current = ref([useRoute().name])
 const items = ref([
   {
-    key: "chat",
+    key: 'chat',
     icon: () => h(AliwangwangOutlined),
-    label: "AI Chat",
-    title: "AI Chat"
+    label: 'AI Chat',
+    title: 'AI Chat'
   },
   {
-    key: "drawing",
+    key: 'drawing',
     icon: () => h(EditOutlined),
-    label: "AI 绘画",
-    title: "AI 绘画"
+    label: 'AI 绘画',
+    title: 'AI 绘画'
   }
 ])
 const router = useRouter()
@@ -65,7 +58,7 @@ function handleLogout() {
   userStore.clearUserInfo()
 
   // 跳转到登录页
-  router.push("/login")
+  router.push('/login')
 }
 </script>
 
