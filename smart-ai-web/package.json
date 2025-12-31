@@ -57,5 +57,9 @@
     "stylus": "^0.55.0",
     "vite": "^4.5.14",
     "vite-plugin-eslint": "^1.8.1"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
   }
 }
