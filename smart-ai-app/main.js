@@ -13,13 +13,18 @@ app.$mount()
 
 // #ifdef VUE3
 import { createSSRApp } from 'vue'
+import { createPinia } from 'pinia'
 
 const towxml = require("./wxcomponents/towxml/index.js")
 export function createApp() {
   const app = createSSRApp(App)
+  const pinia = createPinia()
+  app.use(pinia)
+  
   app.config.globalProperties.$towxml = towxml
   return {
-    app
+    app,
+	pinia
   }
 }
 // #endif

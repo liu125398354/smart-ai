@@ -53,12 +53,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import chatApi from "@/api/chat"
 import ChatView from "@/components/ChatView.vue"
 
-const conversationsList = ref([])
-const messageList = ref([])
+import { useChatStore } from '@/stores/chat'
+import { useUserStore } from '@/stores/user'
+
+const chatStore = useChatStore()
+const userStore = useUserStore()
+
 const statusBarHeight = ref(0) // 状态栏高度
 const navBarHeight = ref(44) // 导航栏默认高度，单位px
 const capsuleTop = ref(0) // 胶囊上边界距顶部距离
@@ -83,7 +87,14 @@ let dragging = false  // 是否正在拖动
 let touchArea = null
 
 
-onMounted(() => {
+const messageList = computed(() => chatStore.getMessageData)
+const conversationsList = computed(() => chatStore.getConversationsData)
+const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
+const userId = computed(() => userStore.getUserId)
+const token = computed(() => userStore.getToken)
+
+
+onMounted(async () => {
 	const systemInfo = uni.getSystemInfoSync()
 	  statusBarHeight.value = systemInfo.statusBarHeight // 获取状态栏高度
 	
@@ -94,18 +105,26 @@ onMounted(() => {
 	    navBarHeight.value = menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight.value) * 2
 	    capsuleTop.value = menuButtonInfo.top // 用于后续标题垂直居中计算
 	  }
-	initConversationsList()
+	chatStore.setMessage()
+	try {
+	    await initConversationsList()
+	    await initChatMessages()
+	    // chatStore.setSelectedConversationId(selectedConversationId.value)
+	  } catch (error) {
+	    console.error('加载列表失败:', error)
+	  }
 })
 
 async function initConversationsList() {
-	const response = await chatApi.getConversations({ userId: uni.getStorageSync("userInfo").id })
-	conversationsList.value = response
+	return chatStore.getConversationsList({ userId: userId.value })
 }
 
-async function selectConversation(conversationId) {
-	const response = await chatApi.getChatMessagesByConversationId({ conversationId })
-	console.log(response.data)
-	messageList.value = response.data.messages
+function initChatMessages() {
+  return chatStore.getChatMessages({ userId: userId.value })
+}
+
+async function selectConversation(id) {
+	chatStore.setSelectedConversationId(id)
 }
 
 /* 触摸事件 */

@@ -10,11 +10,11 @@ export default {
   },
   
   getConversations(params) {
-    return request.post("/qianfan/getConversationsList", params)
+    return request.post("/qianfan/getConversationsList", params, { requireUserId: true })
   },
   
   getChatMessagesByUser(params) {
-    return request.post("/qianfan/getChatMessagesByUser", params)
+    return request.post("/qianfan/getChatMessagesByUser", params, { requireUserId: true })
   },
   
   getChatMessagesByConversationId(params) {

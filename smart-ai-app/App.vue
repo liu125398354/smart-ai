@@ -1,23 +1,23 @@
 <script>
+	import { useUserStore } from '@/stores/user'
 	import authApi from "@/api/auth.js"
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
 			// #ifdef MP
-			const token = uni.getStorageSync('token')
-			if (token) {
-				return
+			const userStore = useUserStore()
+			
+			if (userStore.token) {
+			  return
 			}
 			uni.login({
 			  provider: 'weixin',
-			  success: (res) => {
-			    const code = res.code
-				console.log(code)
-				authApi.login({ code }).then((res) => {
-					console.log(res)
-					uni.setStorageSync('token', res.data.token)
-					uni.setStorageSync('userInfo', res.data.user)
-				})
+			  success: async (res) => {
+			    const { code } = res
+			    const result = await authApi.login({ code })
+	  
+			    userStore.setToken(result.data.token)
+			    userStore.setUserInfo(result.data.user)
 			  }
 			})
 			// #endif

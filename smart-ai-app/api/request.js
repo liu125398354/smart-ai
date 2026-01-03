@@ -1,4 +1,6 @@
 // 网络请求封装
+import { getFromLocal, removeLocal } from '@/utils/index'
+import { useUserStore } from '@/stores/user'
 const BASE_URL = 'http://192.168.1.3:3000' // 根据实际情况修改
 
 // 新增：防止重复刷新 token
@@ -7,22 +9,23 @@ let requestQueue = []
 
 export default {
   // GET请求
-  get(url, data = {}) {
-    return this.request('GET', url, data)
+  get(url, data = {}, options = {}) {
+    return this.request('GET', url, data, options)
   },
 
   // POST请求
-  post(url, data = {}) {
-    return this.request('POST', url, data)
+  post(url, data = {}, options = {}) {
+    return this.request('POST', url, data, options)
   },
 
   // 通用请求方法
-  request(method, url, data) {
+  request(method, url, data, options) {
+	const userStore = useUserStore()
     return new Promise((resolve, reject) => {
 
       const doRequest = () => {
         // #ifdef MP
-        const token = uni.getStorageSync('token')
+        const token = userStore.token
         // #endif
 
         // #ifdef H5 || APP-PLUS
@@ -33,6 +36,13 @@ export default {
         if (token) {
           header['Authorization'] = `Bearer ${token}`
         }
+		
+		if (options.requireUserId) {
+		  const userInfo = getFromLocal('userInfo')
+		  if (userInfo) {
+			data = { ...data, userId: userInfo.id }
+		  }
+		}
 
         uni.request({
           url: BASE_URL + url,
@@ -45,7 +55,7 @@ export default {
             } else if (res.statusCode === 401 || res.statusCode === 403) {
               // 清除 token
               // #ifdef MP
-              uni.removeStorageSync('token')
+              userStore.clearUserInfo()
               // #endif
 
               // #ifdef H5 || APP-PLUS
@@ -82,16 +92,15 @@ export default {
                       })
                     })
                     if (loginResult.success) {
-                      uni.setStorageSync('token', loginResult.data.token)
-                      uni.setStorageSync('userInfo', loginResult.data.user)
-
+					  userStore.setToken(loginResult.data.token)
+					  userStore.setUserInfo(loginResult.data.user)
                       // 执行队列请求
                       requestQueue.forEach(cb => cb())
                       requestQueue = []
                       isRefreshing = false
 
                       // 重试当前请求
-                      this.request(method, url, data).then(resolve).catch(reject)
+                      this.request(method, url, data, options).then(resolve).catch(reject)
                     }
                   } catch (err) {
                     isRefreshing = false
