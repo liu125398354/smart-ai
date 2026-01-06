@@ -12,8 +12,13 @@
 	>
 	  <!-- 滚动列表 -->
 	  <scroll-view class="conversations-list" scroll-y>
-		<view v-for="item in conversationsList" :key="item.Id" class="item" @click="selectConversation(item.conversationId)">
-		  {{ item.conversationName }}
+		<view v-for="(item, index) in conversationsList" 
+			:key="item.Id" 
+			class="item" 
+			:class="{ selected: item.conversationId === selectedConversationId }" 
+			@longpress="onLongPressList(index, item.conversationId)"
+			@click="selectConversation(item.conversationId)">
+				{{ item.conversationName }}
 		</view>
 	  </scroll-view>
 
@@ -123,10 +128,59 @@ function initChatMessages() {
   return chatStore.getChatMessages({ userId: userId.value })
 }
 
-async function selectConversation(id) {
-	chatStore.setSelectedConversationId(id)
+async function selectConversation(conversationId) {
+	chatStore.setSelectedConversationId(conversationId)
 }
 
+function onLongPressList(index, conversationId) {
+	uni.showActionSheet({
+		itemList: ['删除', '重命名'],
+		success: (res) => {
+		  switch (res.tapIndex) {
+			case 0:
+			  showDeleteConfirm(index, conversationId)
+			  break
+			case 1:
+			  reNameConfirm(index, conversationId)
+			  break
+		  }
+		},
+		fail: (err) => {
+		  console.log('取消选择', err)
+		}
+	  })
+}
+
+function showDeleteConfirm(index, conversationId) {
+	uni.showModal({
+	    title: '提示',
+	    content: '删除后对话不可恢复，确认要删除吗？',
+	    confirmText: '删除',
+	    confirmColor: '#ff4d4f',
+	    success: (res) => {
+	      if (res.confirm) {
+	        let params = {
+				userId: userId.value,
+				conversationId: conversationId
+			}
+			  chatApi
+				.delConversations(params)
+				.then((res) => {
+				  if (res.code === 0) {
+					chatStore.delConversationsData(index)
+					chatStore.delMessage(conversationId)	
+				  }
+				})
+				.catch(() => {})
+	      }
+	    }
+	  })
+}
+
+function reNameConfirm(index, conversationId) {
+	
+}
+ 
 /* 触摸事件 */
 
 function onTouchStart(e) {
@@ -295,6 +349,13 @@ function handleMainClick() {
   text-overflow: ellipsis;
   padding: 0 50rpx;
   margin-bottom: 30rpx;
+  margin-left: 20rpx;
+  margin-right: 20rpx;
+}
+
+.selected {
+	background-color: #eee;
+	border-radius: 20rpx;
 }
 
 /* 底部固定区域 */
