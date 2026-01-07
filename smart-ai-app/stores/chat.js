@@ -68,6 +68,9 @@ export const useChatStore = defineStore('chat', {
         saveToLocal('chatMessage', this.messageList)
       }
     },
+	renameConversation(currentIndex, name) {
+		this.conversationsList[currentIndex].conversationName = name
+	},
     setConversationsData(data) {
       this.conversationsList = data
     },

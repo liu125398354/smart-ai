@@ -16,7 +16,7 @@
 			:key="item.Id" 
 			class="item" 
 			:class="{ selected: item.conversationId === selectedConversationId }" 
-			@longpress="onLongPressList(index, item.conversationId)"
+			@longpress="onLongPressList(index, item)"
 			@click="selectConversation(item.conversationId)">
 				{{ item.conversationName }}
 		</view>
@@ -54,11 +54,23 @@
       <ChatView :messages="messageList"></ChatView>
     </view>
 
+	
+	<uni-popup ref="renamePopup" type="dialog">
+	  <uni-popup-dialog
+	    mode="input"
+	    title="重命名会话"
+		v-model="renameValue"
+	    placeholder="请输入会话名称"
+		@close="closeRename"
+		:before-close="true"
+	    @confirm="confirmRename"
+	  />
+	</uni-popup>
   </view>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import chatApi from "@/api/chat"
 import ChatView from "@/components/ChatView.vue"
 
@@ -90,6 +102,12 @@ let dragging = false  // 是否正在拖动
 
 // 新增：记录本次触摸起始区域：'main' 或 'sidebar'
 let touchArea = null
+
+
+const renamePopup = ref(null)
+const currentIndex = ref(0)
+const previousItem = ref("")
+const renameValue = ref("")
 
 
 const messageList = computed(() => chatStore.getMessageData)
@@ -132,16 +150,16 @@ async function selectConversation(conversationId) {
 	chatStore.setSelectedConversationId(conversationId)
 }
 
-function onLongPressList(index, conversationId) {
+function onLongPressList(index, item) {
 	uni.showActionSheet({
 		itemList: ['删除', '重命名'],
 		success: (res) => {
 		  switch (res.tapIndex) {
 			case 0:
-			  showDeleteConfirm(index, conversationId)
+			  showDeleteConfirm(index, item.conversationId)
 			  break
 			case 1:
-			  reNameConfirm(index, conversationId)
+			  reNameConfirm(index, item)
 			  break
 		  }
 		},
@@ -177,8 +195,47 @@ function showDeleteConfirm(index, conversationId) {
 	  })
 }
 
-function reNameConfirm(index, conversationId) {
-	
+function reNameConfirm(index, item) {
+	currentIndex.value = index
+	previousItem.value = item
+	renameValue.value = item.conversationName
+	renamePopup.value.open()
+}
+
+function closeRename() {
+	renamePopup.value.close()
+}
+
+function confirmRename(value) {
+	if (!value.trim()) {
+	    uni.showToast({
+	      title: '请输入对话名称',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	  if (previousItem.value.conversationName === value.trim()) {
+	      renamePopup.value.close()
+	      return
+	    }
+	  let params = {
+	      userId: userId.value,
+	      conversationId: previousItem.value.conversationId,
+	      newName: value.trim()
+	    }
+	    chatApi
+	      .modifyConversationName(params)
+	      .then((res) => {
+	        if (res.code === 0) {
+				chatStore.renameConversation(currentIndex.value, value.trim())
+				uni.showToast({
+					title: res.message,
+					icon: 'success'
+				  })
+	          renamePopup.value.close()
+	        }
+	      })
+	      .catch(() => {})
 }
  
 /* 触摸事件 */
