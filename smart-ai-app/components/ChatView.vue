@@ -1,9 +1,10 @@
 <template>
   <scroll-view
+    ref="scrollViewRef"
     scroll-y
     class="chat-scroll"
     :scroll-with-animation="true"
-    :scroll-into-view="scrollIntoView"
+    :scroll-into-view="scrollIntoViewId"
   >
     <view class="chat-list">
       <view
@@ -15,6 +16,8 @@
         <MessageItem :item="item" @rendered="onItemRendered"/>
       </view>
     </view>
+	<!-- 底部锚点元素 -->
+	<view id="scroll-bottom-anchor" class="scroll-bottom-anchor"></view>
 	<view v-if="loading" class="loading-overlay">
 	  <view class="spinner"></view>
 	  <view class="loading-text">加载中...</view>
@@ -24,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, onMounted, getCurrentInstance } from 'vue'
 import MessageItem from './MessageItem.vue'
 
 const props = defineProps({
@@ -34,8 +37,8 @@ const props = defineProps({
   }
 })
 
-/** 自动滚动定位 ID */
-const scrollIntoView = ref('')
+const scrollViewRef = ref(null)
+const scrollIntoViewId = ref('')
 const loading = ref(true)
 const renderedCount = ref(0)
 // 内部渲染消息列表
@@ -62,11 +65,7 @@ watch(
     // 等 Vue 清空 DOM 后再赋值新消息
     await nextTick()
     renderMessages.value = val
-
-    // 自动滚动到最后一条
-    const lastId = val[val.length - 1].createTime
-    await nextTick()
-    scrollIntoView.value = 'msg-' + lastId
+	
   },
   { deep: true }
 )
@@ -75,7 +74,27 @@ function onItemRendered() {
   renderedCount.value++
   if (renderedCount.value === props.messages.length) {
     loading.value = false
+	nextTick(() => {
+		
+	      // 延迟确保 DOM 更新完成
+	      setTimeout(() => {
+	        scrollToBottom()
+	      }, 50)
+	    })
+
   }
+}
+
+function scrollToBottom() {
+  if (props.messages.length === 0) return
+  
+  // 使用锚点方式
+  scrollIntoViewId.value = 'scroll-bottom-anchor'
+  
+  // 重置以便下次可以再次触发
+  nextTick(() => {
+    scrollIntoViewId.value = ''
+  })
 }
 </script>
 
@@ -93,6 +112,12 @@ function onItemRendered() {
 /* 每条消息之间的距离 */
 .msg-row {
   margin-bottom: 26rpx;
+}
+
+.scroll-bottom-anchor {
+  height: 10rpx;
+  width: 100%;
+  visibility: hidden;
 }
 
 .loading-overlay {
