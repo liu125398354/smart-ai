@@ -132,6 +132,7 @@ onMounted(async () => {
 	try {
 	    await initConversationsList()
 	    await initChatMessages()
+		chatStore.setSelectedConversationId(selectedConversationId.value)
 	    // chatStore.setSelectedConversationId(selectedConversationId.value)
 	  } catch (error) {
 	    console.error('加载列表失败:', error)
@@ -148,6 +149,7 @@ function initChatMessages() {
 
 async function selectConversation(conversationId) {
 	chatStore.setSelectedConversationId(conversationId)
+	closeSidebar()
 }
 
 function onLongPressList(index, item) {

@@ -6,10 +6,10 @@
 		</view>
 		<view class="chat-right-content">
 			<view class="chat-time chat-right-time">{{ parseTime(item.timestamp) }}</view>
-			<!-- <view class="chat-content">{{ item.content }}</view> -->
-			<view class="chat-content">
-				<towxml :nodes="parsedContent" />
-			</view>
+			<view class="chat-content">{{ item.content }}</view>
+			<!-- <view class="chat-content">
+				<towxml :nodes="item._parsedContent" />
+			</view> -->
 		</view>
 	</view>
 	<view class="chat-left" v-else>
@@ -22,7 +22,7 @@
 				图表渲染
 			</view>
 			<view v-else class="chat-marked">
-				<towxml :nodes="parsedContent" />
+				<towxml :nodes="item._parsedContent" />
 				<!-- <view class="chat-marked">{{ item.content }}</view> -->
 			</view>
 		</view>
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance, onMounted, defineEmits } from 'vue'
 import { parseTime } from '@/utils'
 const props = defineProps({
   item: {
@@ -40,24 +40,30 @@ const props = defineProps({
   }
 })
 
-// 获取 Vue 实例上下文，以访问挂载的全局属性
-const { proxy } = getCurrentInstance()
+const emit = defineEmits(["rendered"])
 
-const parsedContent = computed(() => {
-  const result = proxy.$towxml(props.item.content
-	  // 块级公式 \[...\] → $$...$$
-      .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
-      // 行内公式 \(...\) → $...$
-      .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`), 'markdown', {
-			theme:'light',					// 主题，默认`light`
-			events:{					// 为元素绑定的事件方法
-				tap:(e)=>{
-					console.log('tap',e);
-				}
-			}
-		})
-  return result
+onMounted(() => {
+	emit('rendered')
 })
+// 获取 Vue 实例上下文，以访问挂载的全局属性
+// const { proxy } = getCurrentInstance()
+
+// const parsedContent = computed(() => {
+//   const result = proxy.$towxml(props.item.content
+// 	  // 块级公式 \[...\] → $$...$$
+//       .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
+//       // 行内公式 \(...\) → $...$
+//       .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`), 'markdown', {
+// 			theme:'light',					// 主题，默认`light`
+// 			events:{					// 为元素绑定的事件方法
+// 				tap:(e)=>{
+// 					console.log('tap',e);
+// 				}
+// 			}
+// 		})
+// 		console.log(result)
+//   return result
+// })
 </script>
 
 <style lang="scss">

@@ -8,9 +8,29 @@ import { defineStore } from 'pinia'
 import { saveToLocal, getFromLocal } from '@/utils'
 import chatApi from '@/api/chat'
 
+/**
+ * 内存级解析缓存（不进 localStorage）
+ * 只给 assistant 且非 chart 的消息解析
+ */
+function ensureParsedContent(message, towxml) {
+  if (!message._parsedContent && message.content) {
+    message._parsedContent = towxml(
+      message.content
+        // 块级公式 \[...\] → $$...$$
+        .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
+        // 行内公式 \(...\) → $...$
+        .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`),
+      'markdown'
+    )
+  }
+}
+
 export const useChatStore = defineStore('chat', {
   state: () => ({
-    messageList: [],
+    // key: conversationId
+    // value: { conversationId, userId, messages: [...] }
+    messageMap: {},
+
     chartsMessageList: [],
     conversationsList: [],
     selectedConversationId: null
@@ -18,119 +38,150 @@ export const useChatStore = defineStore('chat', {
 
   getters: {
     getMessageData: (state) => {
-      let data =
-        (state.messageList.length > 0 ? state.messageList : '') || getFromLocal('chatMessage')
-      if (data) {
-        const index = data.findIndex((item) => item.conversationId === state.selectedConversationId)
-        return index > -1 ? data[index].messages : []
-      } else {
-        return state.messageList
+      const convId = state.selectedConversationId
+      if (!convId || !state.messageMap[convId]) return []
+
+      const messages = state.messageMap[convId].messages
+
+      // 只在 getter 里统一做一次解析
+      const app = getApp?.()
+      const towxml = app?.$vm?.$towxml
+
+      if (towxml) {
+        messages.forEach((msg) => {
+          if (msg.role === 'assistant' && !msg.isChart) {
+            ensureParsedContent(msg, towxml)
+          }
+        })
       }
+
+      return messages
     },
-    getConversationsData: (state) => {
-      return state.conversationsList
-    },
-    getSelectedConversationId: (state) => {
-      return state.selectedConversationId || getFromLocal('selectedConversationId')
-    }
+
+    getConversationsData: (state) => state.conversationsList,
+
+    getSelectedConversationId: (state) =>
+      state.selectedConversationId || getFromLocal('selectedConversationId')
   },
 
   actions: {
-    addMessage(params) {
-      const { conversationId, userId, role, content, createTime } = params
-      const index = this.messageList.findIndex((item) => item.conversationId === conversationId)
-      if (index > -1) {
-        this.messageList[index].messages.push({
-          role: role,
-          content: content,
-          createTime: createTime
-        })
+    /** 添加消息 */
+    addMessage({ conversationId, userId, role, content, createTime }) {
+      const newMsg = { role, content, createTime, userId }
+
+      if (this.messageMap[conversationId]) {
+        this.messageMap[conversationId].messages.push(newMsg)
       } else {
-        this.messageList.push({
-          conversationId: conversationId,
-          userId: userId,
-          messages: [
-            {
-              role: role,
-              content: content,
-              createTime: createTime
-            }
-          ]
-        })
+        this.messageMap[conversationId] = {
+          conversationId,
+          userId,
+          messages: [newMsg]
+        }
       }
-      saveToLocal('chatMessage', this.messageList)
+
+      this._saveToStorage()
     },
 
+    /** 删除整个会话的消息 */
     delMessage(conversationId) {
-      const index = this.messageList.findIndex((item) => item.conversationId === conversationId)
-      if (index > -1) {
-        this.messageList.splice(index, 1)
-        saveToLocal('chatMessage', this.messageList)
+      delete this.messageMap[conversationId]
+      this._saveToStorage()
+    },
+
+    /** 重命名会话 */
+    renameConversation(currentIndex, name) {
+      if (this.conversationsList[currentIndex]) {
+        this.conversationsList[currentIndex].conversationName = name
       }
     },
-	renameConversation(currentIndex, name) {
-		this.conversationsList[currentIndex].conversationName = name
-	},
+
     setConversationsData(data) {
       this.conversationsList = data
     },
 
+    /** 删除会话 */
     delConversationsData(index) {
+      const convId = this.conversationsList[index]?.conversationId
       this.conversationsList.splice(index, 1)
+
+      if (convId) delete this.messageMap[convId]
+
       if (this.conversationsList.length === 0) {
         this.selectedConversationId = null
       } else if (index === this.conversationsList.length) {
-        this.selectedConversationId = this.conversationsList[index - 1].conversationId
+        this.selectedConversationId =
+          this.conversationsList[index - 1].conversationId
       } else {
-        this.selectedConversationId = this.conversationsList[index].conversationId
+        this.selectedConversationId =
+          this.conversationsList[index].conversationId
       }
+
       saveToLocal('selectedConversationId', this.selectedConversationId)
+      this._saveToStorage()
     },
 
-    updateMessage(params) {
-      const { conversationId, message } = params
-      const index = this.messageList.findIndex((item) => item.conversationId === conversationId)
-      let messages = this.messageList[index].messages
+    /** 流式更新消息 */
+    updateMessage({ conversationId, message }) {
+      const conv = this.messageMap[conversationId]
+      if (!conv || conv.messages.length === 0) return
+
+      const messages = conv.messages
       const lastIndex = messages.length - 1
+
       if (messages[lastIndex].role === 'user') {
         messages.push({
           role: 'assistant',
           content: message,
-          createTime: new Date().getTime()
+          createTime: Date.now(),
+          userId: conv.userId
         })
       } else {
         messages[lastIndex].content = message
+        // 内容变了 → 清掉解析缓存
+        delete messages[lastIndex]._parsedContent
       }
-      saveToLocal('chatMessage', this.messageList)
+
+      this._saveToStorage()
     },
 
-    convertLastAssistantToChart(params) {
-      const { conversationId, chartPayload } = params
-      const index = this.messageList.findIndex((item) => item.conversationId === conversationId)
-      if (index === -1) return
-      const messages = this.messageList[index].messages
-      const lastIndex = messages.length - 1
-      if (lastIndex < 0) return
-      const last = messages[lastIndex]
+    /** AI 回复转图表 */
+    convertLastAssistantToChart({ conversationId, chartPayload }) {
+      const conv = this.messageMap[conversationId]
+      if (!conv || conv.messages.length === 0) return
+
+      const last = conv.messages[conv.messages.length - 1]
       if (last.role === 'assistant') {
         last.isChart = true
         last.chartPayload = chartPayload
-        last.content = '' // 由渲染器负责显示
-        last.createTime = new Date().getTime()
-        saveToLocal('chatMessage', this.messageList)
+        last.content = ''
+        delete last._parsedContent
+        last.createTime = Date.now()
       }
+
+      this._saveToStorage()
     },
-    setMessage(message) {
-      if (Array.isArray(message) && message.length > 0) {
-        saveToLocal('chatMessage', message)
-        this.messageList = message
-      } else {
-        let data = getFromLocal('chatMessage')
-        if (data) {
-          this.messageList = data
+
+    /** 初始化 / 设置全部消息 */
+    setMessage(messages) {
+      const map = {}
+
+      const source =
+        Array.isArray(messages) && messages.length > 0
+          ? messages
+          : getFromLocal('chatMessage') || []
+
+      source.forEach((item) => {
+        map[item.conversationId] = {
+          conversationId: item.conversationId,
+          userId: item.userId,
+          messages: item.messages || []
         }
-      }
+      })
+
+      this.messageMap = map
+      this._saveToStorage()
     },
+
     setSelectedConversationId(id) {
       this.selectedConversationId = id
       saveToLocal('selectedConversationId', id)
@@ -139,30 +190,35 @@ export const useChatStore = defineStore('chat', {
     async getConversationsList({ userId }) {
       try {
         const response = await chatApi.getConversations({ userId })
-        this.setConversationsData(response) // 请求成功后将数据存储到state中
-        return Promise.resolve(response)
+        this.setConversationsData(response)
+        return response
       } catch (error) {
-        console.error('获取对话列表失败:', error) // 请求失败时处理错误
+        console.error('获取对话列表失败:', error)
         return Promise.reject(error)
       }
     },
 
     async getChatMessages({ userId }) {
-      let messageList = this.messageList
-      if (Array.isArray(messageList) && messageList.length > 0) {
-        return
-      }
-      // 如果本地storage被删除，则从后台获取所有对话内容
+      if (Object.keys(this.messageMap).length > 0) return
+
       try {
-        const response = await chatApi.getChatMessagesByUser({
-          userId
-        })
-        this.setMessage(response.data) // 存储数据到state中
-        return Promise.resolve(response)
+        const response = await chatApi.getChatMessagesByUser({ userId })
+        this.setMessage(response.data)
+        return response
       } catch (error) {
-        console.error('获取聊天消息失败:', error) // 处理错误
+        console.error('获取聊天消息失败:', error)
         return Promise.reject(error)
       }
+    },
+
+    /** 统一落盘（不保存 _parsedContent） */
+    _saveToStorage() {
+      const pureData = Object.values(this.messageMap).map((conv) => ({
+        ...conv,
+        messages: conv.messages.map(({ _parsedContent, ...rest }) => rest)
+      }))
+
+      saveToLocal('chatMessage', pureData)
     }
   }
 })
