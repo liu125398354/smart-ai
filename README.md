@@ -40,6 +40,8 @@ smart-ai
 │   │       └── chat.vue                # 聊天主页面（入口页面）
 │   ├── static                          # 静态资源目录
 │   │   └── logo.png                    # 默认 Logo 示例
+│   ├── stores                          # pina状态管理
+│   ├── uni_modules                     # 插件目录
 │   ├── utils                           # 工具类（格式化工具/缓存封装）
 │   ├── wxcomponents                    # 第三方组件目录
 │   ├── App.vue                         # Uni-App 根组件
