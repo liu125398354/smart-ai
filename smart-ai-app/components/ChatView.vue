@@ -1,12 +1,11 @@
 <template>
   <scroll-view
-    ref="scrollViewRef"
     scroll-y
     class="chat-scroll"
     :scroll-with-animation="true"
-    :scroll-into-view="scrollIntoViewId"
+    :scroll-top="scrollTop"
   >
-    <view class="chat-list">
+    <view class="chat-list" :class="{ 'list-hidden': !loading }">
       <view
         v-for="(item, index) in renderMessages"
         :key="item.createTime"
@@ -16,20 +15,18 @@
         <MessageItem :item="item" @rendered="onItemRendered"/>
       </view>
     </view>
-	<!-- 底部锚点元素 -->
-	<view id="scroll-bottom-anchor" class="scroll-bottom-anchor"></view>
 	<view v-if="loading" class="loading-overlay">
 	  <view class="spinner"></view>
 	  <view class="loading-text">加载中...</view>
 	</view>
   </scroll-view>
-  
 </template>
 
 <script setup>
 import { ref, nextTick, watch, onMounted, getCurrentInstance } from 'vue'
 import MessageItem from './MessageItem.vue'
 
+const { proxy } = getCurrentInstance()
 const props = defineProps({
   messages: {
     type: Array,
@@ -37,7 +34,7 @@ const props = defineProps({
   }
 })
 
-const scrollViewRef = ref(null)
+const scrollTop = ref(0)
 const scrollIntoViewId = ref('')
 const loading = ref(true)
 const renderedCount = ref(0)
@@ -73,28 +70,30 @@ watch(
 function onItemRendered() {
   renderedCount.value++
   if (renderedCount.value === props.messages.length) {
-    loading.value = false
 	nextTick(() => {
-		
-	      // 延迟确保 DOM 更新完成
-	      setTimeout(() => {
-	        scrollToBottom()
-	      }, 50)
-	    })
-
+	  // 延迟确保 DOM 更新完成
+	  setTimeout(() => {
+		loading.value = false
+		scrollToBottom()
+	  }, 1000)
+	})
   }
 }
 
 function scrollToBottom() {
-  if (props.messages.length === 0) return
-  
-  // 使用锚点方式
-  scrollIntoViewId.value = 'scroll-bottom-anchor'
-  
-  // 重置以便下次可以再次触发
   nextTick(() => {
-    scrollIntoViewId.value = ''
-  })
+		const query = uni.createSelectorQuery().in(proxy)
+		query.select('.chat-scroll').boundingClientRect()
+		query.select('.chat-list').boundingClientRect()
+		query.exec(res => {
+		  const scrollViewHeight = res[0].height
+		  const scrollContentHeight = res[1].height
+		  if (scrollContentHeight > scrollViewHeight) {
+			scrollTop.value = scrollContentHeight - scrollViewHeight
+		  }
+		  console.log("scroll---", scrollContentHeight, scrollViewHeight)
+		})
+	})
 }
 </script>
 
@@ -105,8 +104,13 @@ function scrollToBottom() {
 }
 
 .chat-list {
+  visibility: hidden;
   padding: 30rpx;
   box-sizing: border-box;
+}
+
+.list-hidden {
+	visibility: visible;
 }
 
 /* 每条消息之间的距离 */
