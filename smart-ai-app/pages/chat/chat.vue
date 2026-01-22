@@ -51,7 +51,7 @@
         <view class="top-title">新对话</view>
       </view>
 
-      <ChatView :messages="messageList" :scrollHeight="chatScrollHeight"></ChatView>
+      <ChatView class="chat-view" :messages="messageList"></ChatView>
 	  
 	  <!-- 输入区 -->
 	  <view class="chat-input-bar">
@@ -62,7 +62,6 @@
 	        auto-height
 	        placeholder="请输入内容"
 	        :maxlength="500"
-	        @linechange="onLineChange"
 	      />
 	      <view class="input-actions">
 	        <view
@@ -137,18 +136,6 @@ const renameValue = ref("")
 const inputText = ref('')
 const { proxy } = getCurrentInstance()
 
-const windowHeight = uni.getWindowInfo().windowHeight
-const inputHeight = ref(88) // 初始单行高度
-const chatScrollHeight = computed(() => {
-	console.log(windowHeight, navBarHeight, statusBarHeight, inputHeight)
-  return (
-    windowHeight
-    - navBarHeight.value
-    - statusBarHeight.value
-    - inputHeight.value
-  )
-})
-
 
 const messageList = computed(() => chatStore.getMessageData)
 const conversationsList = computed(() => chatStore.getConversationsData)
@@ -159,7 +146,6 @@ const userInfo = computed(() => userStore.getUserInfo)
 
 
 onMounted(async () => {
-	onLineChange()
 	const systemInfo = uni.getSystemInfoSync()
 	  statusBarHeight.value = systemInfo.statusBarHeight // 获取状态栏高度
 	
@@ -417,16 +403,6 @@ function sendMessage() {
   inputText.value = ''
 }
 
-function onLineChange() {
-	nextTick(() => {
-		 uni.createSelectorQuery().in(proxy)
-			.select('.chat-input-bar')
-			.boundingClientRect(rect => {
-			  inputHeight.value = rect.height
-			})
-			.exec()
-	})
-}
 </script>
 
 <style lang="scss">
@@ -537,6 +513,11 @@ function onLineChange() {
   left: 50%;
   transform: translateX(-50%);
   font-size: 40rpx;
+}
+
+.chat-view {
+	flex: 1;
+	overflow: hidden;
 }
 
 .chat-input-bar {

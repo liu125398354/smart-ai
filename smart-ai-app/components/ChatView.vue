@@ -1,6 +1,5 @@
 <template>
   <scroll-view
-	:style="{ height: scrollHeight + 'px' }"
     scroll-y
     class="chat-scroll"
     :scroll-with-animation="true"
@@ -32,9 +31,6 @@ const props = defineProps({
   messages: {
     type: Array,
     default: () => []
-  },
-  scrollHeight: {
-	  type: Number
   }
 })
 
@@ -103,9 +99,7 @@ function scrollToBottom() {
 
 <style scoped>
 .chat-scroll {
-  /* height: calc(100vh - 80rpx); /* 上面预留你的 top-bar */ */
-  flex: 1;
-  overflow: hidden;
+  height: 100%;
   box-sizing: border-box;
 }
 
