@@ -11,7 +11,7 @@
 	  @touchend="onTouchEnd"
 	>
 	  <!-- 滚动列表 -->
-	  <scroll-view class="conversations-list" scroll-y>
+	  <scroll-view :style="{ paddingTop: statusBarHeight + 'px' }" class="conversations-list" scroll-y>
 		<view v-for="(item, index) in conversationsList" 
 			:key="item.Id" 
 			class="item" 
@@ -24,7 +24,7 @@
 
 	  <!-- 底部固定信息区 -->
 	  <view class="sidebar-bottom">
-		<view class="user-info">用户名</view>
+		<view class="user-info">{{ userInfo.username }}</view>
 		<view class="settings">⚙️</view>
 	  </view>
 	</view>
@@ -41,7 +41,7 @@
     >
 
       <!-- 顶部栏 -->
-      <view class="top-bar" :style="{ paddingTop: statusBarHeight + 'px', height: navBarHeight + 'px' }">
+      <view class="top-bar" :style="{ paddingTop: statusBarHeight + 'px', flex: `0 0 ${navBarHeight}px` }">
         <!-- 注意：这里 .stop 以防按钮点击冒泡触发主区的点击关闭 -->
          <!-- 左侧按钮容器 -->
 		<view class="left-buttons">
@@ -51,7 +51,32 @@
         <view class="top-title">新对话</view>
       </view>
 
-      <ChatView :messages="messageList"></ChatView>
+      <ChatView :messages="messageList" :scrollHeight="chatScrollHeight"></ChatView>
+	  
+	  <!-- 输入区 -->
+	  <view class="chat-input-bar">
+	    <view class="input-wrapper">
+	      <textarea
+	        v-model="inputText"
+	        class="chat-input"
+	        auto-height
+	        placeholder="请输入内容"
+	        :maxlength="500"
+	        @linechange="onLineChange"
+	      />
+	      <view class="input-actions">
+	        <view
+	          class="send-btn"
+	          :class="{ disabled: !inputText.trim() }"
+	          @click="sendMessage"
+	        >
+	          ➤
+	        </view>
+	      </view>
+	    </view>
+	  </view>
+
+
     </view>
 
 	
@@ -70,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, getCurrentInstance } from 'vue'
 import chatApi from "@/api/chat"
 import ChatView from "@/components/ChatView.vue"
 
@@ -109,15 +134,32 @@ const currentIndex = ref(0)
 const previousItem = ref("")
 const renameValue = ref("")
 
+const inputText = ref('')
+const { proxy } = getCurrentInstance()
+
+const windowHeight = uni.getWindowInfo().windowHeight
+const inputHeight = ref(88) // 初始单行高度
+const chatScrollHeight = computed(() => {
+	console.log(windowHeight, navBarHeight, statusBarHeight, inputHeight)
+  return (
+    windowHeight
+    - navBarHeight.value
+    - statusBarHeight.value
+    - inputHeight.value
+  )
+})
+
 
 const messageList = computed(() => chatStore.getMessageData)
 const conversationsList = computed(() => chatStore.getConversationsData)
 const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
 const userId = computed(() => userStore.getUserId)
 const token = computed(() => userStore.getToken)
+const userInfo = computed(() => userStore.getUserInfo)
 
 
 onMounted(async () => {
+	onLineChange()
 	const systemInfo = uni.getSystemInfoSync()
 	  statusBarHeight.value = systemInfo.statusBarHeight // 获取状态栏高度
 	
@@ -368,6 +410,23 @@ function toggleSidebar() {
 function handleMainClick() {
   if (sidebarOpen.value) closeSidebar()
 }
+
+function sendMessage() {
+  if (!inputText.value.trim()) return
+
+  inputText.value = ''
+}
+
+function onLineChange() {
+	nextTick(() => {
+		 uni.createSelectorQuery().in(proxy)
+			.select('.chat-input-bar')
+			.boundingClientRect(rect => {
+			  inputHeight.value = rect.height
+			})
+			.exec()
+	})
+}
 </script>
 
 <style lang="scss">
@@ -443,6 +502,8 @@ function handleMainClick() {
   position: absolute;
   left: 0;
   top: 0;
+  display: flex;
+  flex-direction: column;
   transition: transform .25s cubic-bezier(.25,.8,.25,1);
 }
 
@@ -477,4 +538,58 @@ function handleMainClick() {
   transform: translateX(-50%);
   font-size: 40rpx;
 }
+
+.chat-input-bar {
+  padding: 16rpx;
+  background: #fff;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+}
+
+.input-wrapper {
+  width: 100%;
+  border: 1rpx solid #dcdcdc;
+  border-radius: 20rpx;
+  background: #fff;
+  padding: 16rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.chat-input {
+  width: 100%;
+  min-height: 64rpx;
+  max-height: 240rpx; /* 5~6 行 */
+  font-size: 28rpx;
+  line-height: 1.5;
+  border: none;
+  padding: 0;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+
+.input-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12rpx;
+}
+
+.send-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: #07c160;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+
+.send-btn.disabled {
+  background: #ccc;
+}
+
 </style>
