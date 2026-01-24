@@ -27,11 +27,17 @@ import { ref, nextTick, watch, onMounted, getCurrentInstance } from 'vue'
 import MessageItem from './MessageItem.vue'
 
 const { proxy } = getCurrentInstance()
+const emit = defineEmits(['ready'])
+
 const props = defineProps({
   messages: {
     type: Array,
     default: () => []
-  }
+  },
+  switching: {
+      type: Boolean,
+      default: false
+    }
 })
 
 const scrollTop = ref(0)
@@ -41,27 +47,39 @@ const renderedCount = ref(0)
 // 内部渲染消息列表
 const renderMessages = ref([])
 
-/**
- * 监听消息变化
- * 每次增加消息 → 自动滚动到最后一条
- */
+
 watch(
   () => props.messages,
   async (val) => {
-    renderedCount.value = 0
-    loading.value = true
+	/**
+	 * ① 切换会话
+	 */
+	
+	if (props.switching) {
+	  renderedCount.value = 0
+	  loading.value = true
+	  // 先清空旧列表
+	  renderMessages.value = []
+	  
+	  if (!val || val.length === 0) {
+	    loading.value = false
+	    return
+	  }
+	  
+	  // 等 Vue 清空 DOM 后再赋值新消息
+	  await nextTick()
+	  renderMessages.value = val
+	  return
+	}
 
-    // 先清空旧列表
-    renderMessages.value = []
+	/**
+	 * ② 流式 / 普通消息
+	 * 不清空、不 loading
+	 */
+	renderMessages.value = val
 
-    if (!val || val.length === 0) {
-      loading.value = false
-      return
-    }
-
-    // 等 Vue 清空 DOM 后再赋值新消息
-    await nextTick()
-    renderMessages.value = val
+	await nextTick()
+	scrollToBottom()  
 	
   },
   { deep: true }
@@ -71,10 +89,12 @@ function onItemRendered() {
   renderedCount.value++
   if (renderedCount.value === props.messages.length) {
 	nextTick(() => {
+		console.log("渲染完成0------》》》》？？？")
 	  // 延迟确保 DOM 更新完成
 	  setTimeout(() => {
 		loading.value = false
 		scrollToBottom()
+		emit('ready')
 	  }, 1000)
 	})
   }
@@ -89,7 +109,7 @@ function scrollToBottom() {
 		  const scrollViewHeight = res[0].height
 		  const scrollContentHeight = res[1].height
 		  if (scrollContentHeight > scrollViewHeight) {
-			scrollTop.value = scrollContentHeight - scrollViewHeight
+			scrollTop.value = scrollContentHeight - scrollViewHeight + 200
 		  }
 		  console.log("scroll---", scrollContentHeight, scrollViewHeight)
 		})

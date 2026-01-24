@@ -127,18 +127,37 @@ export const useChatStore = defineStore('chat', {
 
       const messages = conv.messages
       const lastIndex = messages.length - 1
+	  
+	  const app = getApp?.()
+	  const towxml = app?.$vm?.$towxml
 
       if (messages[lastIndex].role === 'user') {
-        messages.push({
-          role: 'assistant',
-          content: message,
-          createTime: Date.now(),
-          userId: conv.userId
-        })
+		const newMsg = {
+		      role: 'assistant',
+		      content: message,
+		      createTime: Date.now(),
+		      userId: conv.userId
+		    }
+		
+		    // ⭐ 首次就解析
+		    if (towxml) {
+		      ensureParsedContent(newMsg, towxml)
+		    }
+		
+		    messages.push(newMsg)
       } else {
-        messages[lastIndex].content = message
-        // 内容变了 → 清掉解析缓存
-        delete messages[lastIndex]._parsedContent
+        const last = messages[lastIndex]
+		last.content = message
+		if (towxml) {
+		  last._parsedContent = towxml(
+			message
+			  .replace(/\\\[(.*?)\\\]/gs, (_, expr) => `$$${expr}$$`)
+			  .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`),
+			'markdown'
+		  )
+		} else {
+		  delete last._parsedContent
+		}
       }
 
       this._saveToStorage()

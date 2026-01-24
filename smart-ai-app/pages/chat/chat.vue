@@ -51,7 +51,7 @@
         <view class="top-title">新对话</view>
       </view>
 
-      <ChatView class="chat-view" :messages="messageList"></ChatView>
+      <ChatView class="chat-view" :messages="messageList" :switching="switching" @ready="onChatReady"></ChatView>
 	  
 	  <!-- 输入区 -->
 	  <view class="chat-input-bar">
@@ -97,6 +97,7 @@
 import { ref, onMounted, computed, nextTick, getCurrentInstance } from 'vue'
 import chatApi from "@/api/chat"
 import ChatView from "@/components/ChatView.vue"
+import { createStreamRequest } from "@/api/streamRequest.js"
 
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
@@ -135,6 +136,8 @@ const renameValue = ref("")
 
 const inputText = ref('')
 const { proxy } = getCurrentInstance()
+let streamController = null
+const switching = ref(false)
 
 
 const messageList = computed(() => chatStore.getMessageData)
@@ -176,6 +179,8 @@ function initChatMessages() {
 }
 
 async function selectConversation(conversationId) {
+	if (conversationId === selectedConversationId.value) return
+	switching.value = true
 	chatStore.setSelectedConversationId(conversationId)
 	closeSidebar()
 }
@@ -398,10 +403,64 @@ function handleMainClick() {
 }
 
 function sendMessage() {
-  if (!inputText.value.trim()) return
-
+  const userText = inputText.value.trim()
+  if (!userText) return
+  
+  let params = {
+      conversationId: selectedConversationId.value,
+      userId: userId.value,
+      role: 'user',
+      content: userText,
+      createTime: new Date().getTime()
+    }
+  
   inputText.value = ''
+  let totalMessage = ''
+   streamController = createStreamRequest({
+      url: '/qianfan/getQianFanMessage',
+      data: params,
+  
+	   onStart(headers) {
+	        const newDialogId = headers['x-dialog-id']
+	  
+	        if (newDialogId) {
+	          params.conversationId = newDialogId
+	          chatStore.setSelectedConversationId(newDialogId)
+	          initConversationsList()
+	        }
+	        chatStore.addMessage(params)
+	      },
+  
+      onChunk(chunk) {
+        totalMessage += chunk
+		chatStore.updateMessage({
+			conversationId: params.conversationId,
+			message: totalMessage
+		  })
+      },
+  
+      onComplete() {
+        console.log('流式完成')
+      },
+  
+      onError(err) {
+        console.error('流式失败', err)
+      }
+    })
+  
 }
+
+function stopGenerate() {
+  if (streamController) {
+    streamController.abort()
+    streamController = null
+  }
+}
+
+function onChatReady() {
+  switching.value = false
+}
+
 
 </script>
 
