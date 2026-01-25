@@ -60,8 +60,10 @@ export function createStreamRequest({
     if (aborted) return
 
     try {
-      const text = new TextDecoder('utf-8').decode(res.data)
-      onChunk && onChunk(text)
+       const uint8Array = new Uint8Array(res.data);
+	   let text = String.fromCharCode.apply(null, uint8Array);
+	   text = decodeURIComponent(escape(text));
+       onChunk && onChunk(text)
     } catch (e) {
       console.error('chunk decode error', e)
     }

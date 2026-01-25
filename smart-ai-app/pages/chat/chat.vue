@@ -162,7 +162,7 @@ onMounted(async () => {
 	    navBarHeight.value = menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight.value) * 2
 	    capsuleTop.value = menuButtonInfo.top // 用于后续标题垂直居中计算
 	  }
-	chatStore.setMessage()
+	// chatStore.setMessage()
 	try {
 	    await initConversationsList()
 	    await initChatMessages()
