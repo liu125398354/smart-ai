@@ -42,54 +42,45 @@ const props = defineProps({
 
 const scrollTop = ref(0)
 const scrollIntoViewId = ref('')
-const loading = ref(true)
+const loading = ref(false)
 const renderedCount = ref(0)
-// 内部渲染消息列表
 const renderMessages = ref([])
 
+// 切换会话触发
+watch(
+  () => props.switching,
+  async (val) => {
+	if (!val) return
+    renderedCount.value = 0
+    loading.value = true
+    // 先清空旧列表
+    renderMessages.value = []
+    // 等 Vue 清空 DOM 后再赋值新消息
+    await nextTick()
+    renderMessages.value = props.messages
+  }
+)
 
+// 流式消息触发
 watch(
   () => props.messages,
   async (val) => {
-	/**
-	 * ① 切换会话
-	 */
-	
-	if (props.switching) {
-	  renderedCount.value = 0
-	  loading.value = true
-	  // 先清空旧列表
-	  renderMessages.value = []
-	  
-	  if (!val || val.length === 0) {
-	    loading.value = false
-	    return
-	  }
-	  
-	  // 等 Vue 清空 DOM 后再赋值新消息
-	  await nextTick()
-	  renderMessages.value = val
-	  return
-	}
-
-	/**
-	 * ② 流式 / 普通消息
-	 * 不清空、不 loading
-	 */
+	if (props.switching) return
 	renderMessages.value = val
-
 	await nextTick()
-	scrollToBottom()  
-	
+	scrollToBottom() 
   },
   { deep: true }
 )
+
+onMounted(() => {
+	renderMessages.value = props.messages
+})
 
 function onItemRendered() {
   renderedCount.value++
   if (renderedCount.value === props.messages.length) {
 	nextTick(() => {
-		console.log("渲染完成0------》》》》？？？")
 	  // 延迟确保 DOM 更新完成
 	  setTimeout(() => {
 		loading.value = false
@@ -111,7 +102,6 @@ function scrollToBottom() {
 		  if (scrollContentHeight > scrollViewHeight) {
 			scrollTop.value = scrollContentHeight - scrollViewHeight + 200
 		  }
-		  console.log("scroll---", scrollContentHeight, scrollViewHeight)
 		})
 	})
 }

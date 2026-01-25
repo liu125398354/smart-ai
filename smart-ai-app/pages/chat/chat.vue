@@ -46,12 +46,15 @@
          <!-- 左侧按钮容器 -->
 		<view class="left-buttons">
 		  <view class="top-left-btn" @click.stop="toggleSidebar">☰</view>
-		  <view class="top-right-btn">＋</view>
+		  <view class="top-right-btn" @click="createConversation">＋</view>
 		</view>
         <view class="top-title">新对话</view>
       </view>
-
-      <ChatView class="chat-view" :messages="messageList" :switching="switching" @ready="onChatReady"></ChatView>
+	  
+	  <div v-if="messageList.length === 0" class="no-message">
+		你好，我是chatgpt，很高兴见到你！
+	  </div>
+      <ChatView v-else class="chat-view" :messages="messageList" :switching="switching" @ready="onChatReady"></ChatView>
 	  
 	  <!-- 输入区 -->
 	  <view class="chat-input-bar">
@@ -164,7 +167,6 @@ onMounted(async () => {
 	    await initConversationsList()
 	    await initChatMessages()
 		chatStore.setSelectedConversationId(selectedConversationId.value)
-	    // chatStore.setSelectedConversationId(selectedConversationId.value)
 	  } catch (error) {
 	    console.error('加载列表失败:', error)
 	  }
@@ -178,9 +180,11 @@ function initChatMessages() {
   return chatStore.getChatMessages({ userId: userId.value })
 }
 
+// 切换会话
 async function selectConversation(conversationId) {
 	if (conversationId === selectedConversationId.value) return
 	switching.value = true
+	stopGenerate()
 	chatStore.setSelectedConversationId(conversationId)
 	closeSidebar()
 }
@@ -402,6 +406,14 @@ function handleMainClick() {
   if (sidebarOpen.value) closeSidebar()
 }
 
+// 创建新对话
+function createConversation() {
+  stopGenerate()
+  // 每次开始新对话时，messageList数据都会清空
+  chatStore.setSelectedConversationId(null)
+}
+
+// 发送消息
 function sendMessage() {
   const userText = inputText.value.trim()
   if (!userText) return
@@ -425,8 +437,8 @@ function sendMessage() {
 	  
 	        if (newDialogId) {
 	          params.conversationId = newDialogId
+			  initConversationsList()
 	          chatStore.setSelectedConversationId(newDialogId)
-	          initConversationsList()
 	        }
 	        chatStore.addMessage(params)
 	      },
@@ -572,6 +584,14 @@ function onChatReady() {
   left: 50%;
   transform: translateX(-50%);
   font-size: 40rpx;
+}
+
+.no-message {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 40rpx;
 }
 
 .chat-view {
