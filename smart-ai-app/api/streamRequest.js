@@ -50,9 +50,15 @@ export function createStreamRequest({
 
   // headers 到达（首包）
   task.onHeadersReceived((res) => {
-    if (aborted || started) return
-    started = true
-    onStart && onStart(res.header || {})
+	const rawHeaders = res.header || {}
+	const normalizedHeaders = {}
+	
+	// 为各端统一转成小写
+	Object.keys(rawHeaders).forEach((key) => {
+		normalizedHeaders[key.toLowerCase()] = rawHeaders[key]
+	})
+	
+	onStart && onStart(normalizedHeaders)
   })
 
   // chunk 到达
@@ -60,13 +66,11 @@ export function createStreamRequest({
     if (aborted) return
 
     try {
-       const uint8Array = new Uint8Array(res.data);
-	   let text = String.fromCharCode.apply(null, uint8Array);
-	   text = decodeURIComponent(escape(text));
-       onChunk && onChunk(text)
-    } catch (e) {
-      console.error('chunk decode error', e)
-    }
+		const text = decodeChunk(res.data)
+		onChunk && onChunk(text)
+	  } catch (e) {
+		console.error('chunk decode error', e)
+	  }
   })
 
   return {
@@ -76,3 +80,17 @@ export function createStreamRequest({
     }
   }
 }
+
+function decodeChunk(data) {
+  // H5 浏览器
+  if (typeof TextDecoder !== 'undefined') {
+    try {
+      return new TextDecoder('utf-8').decode(data)
+    } catch (e) {}
+  }
+  // 小程序 / 真机
+  const uint8Array = new Uint8Array(data)
+  let text = String.fromCharCode.apply(null, uint8Array)
+  return decodeURIComponent(escape(text))
+}
+

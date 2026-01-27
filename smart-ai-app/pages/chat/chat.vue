@@ -431,10 +431,8 @@ function sendMessage() {
    streamController = createStreamRequest({
       url: '/qianfan/getQianFanMessage',
       data: params,
-  
 	   onStart(headers) {
 	        const newDialogId = headers['x-dialog-id']
-	  
 	        if (newDialogId) {
 	          params.conversationId = newDialogId
 			  initConversationsList()
