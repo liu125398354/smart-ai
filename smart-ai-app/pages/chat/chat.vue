@@ -32,7 +32,9 @@
     <!-- 主区域 -->
     <view
       class="main"
-      :style="{ transform: `translateX(${mainTranslateX}px)` }"
+		:style="{
+		  transform: `translateX(${mainTranslateX}px) translateY(-${keyboardHeight}px)`
+		}"
       data-area="main"
       @touchstart="onTouchStart"
       @touchmove="onTouchMove"
@@ -65,6 +67,8 @@
 	        auto-height
 	        placeholder="请输入内容"
 	        :maxlength="500"
+			:show-confirm-bar="false"
+			:adjust-position="false"
 	      />
 	      <view class="input-actions">
 	        <view
@@ -138,6 +142,8 @@ const previousItem = ref("")
 const renameValue = ref("")
 
 const inputText = ref('')
+const keyboardHeight = ref(0)
+
 const { proxy } = getCurrentInstance()
 let streamController = null
 const switching = ref(false)
@@ -152,6 +158,9 @@ const userInfo = computed(() => userStore.getUserInfo)
 
 
 onMounted(async () => {
+	uni.onKeyboardHeightChange(res => {
+	    keyboardHeight.value = res.height || 0
+	  })
 	const systemInfo = uni.getSystemInfoSync()
 	  statusBarHeight.value = systemInfo.statusBarHeight // 获取状态栏高度
 	
