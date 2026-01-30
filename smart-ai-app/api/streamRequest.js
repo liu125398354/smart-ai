@@ -3,7 +3,6 @@ import {
 } from '@/stores/user'
 
 const BASE_URL = 'http://192.168.1.4:3000'
-
 export function createStreamRequest({
 	url,
 	data = {},
@@ -27,7 +26,6 @@ export function createStreamRequest({
 
 	let task = null
 	let aborted = false
-	let started = false // 防止 onStart 多次触发
 
 	task = uni.request({
 		url: BASE_URL + url,

@@ -1,16 +1,36 @@
 <template>
-	<scroll-view scroll-y class="chat-scroll" :scroll-with-animation="true" :scroll-top="scrollTop">
-		<view class="chat-list" :class="{ 'list-hidden': !loading }">
-			<view v-for="(item, index) in renderMessages" :key="item.createTime" :id="'msg-' + item.createTime"
-				class="msg-row">
-				<MessageItem :item="item" @rendered="onItemRendered" />
-			</view>
-		</view>
-		<view v-if="loading" class="loading-overlay">
-			<view class="spinner"></view>
-			<view class="loading-text">加载中...</view>
-		</view>
-	</scroll-view>
+  <scroll-view
+    scroll-y
+    class="chat-scroll"
+    :scroll-with-animation="true"
+    :scroll-top="scrollTop"
+  >
+    <view
+      class="chat-list"
+      :class="{ 'list-hidden': !loading }"
+    >
+      <view
+        v-for="(item, index) in renderMessages"
+        :id="'msg-' + item.createTime"
+        :key="item.createTime"
+        class="msg-row"
+      >
+        <MessageItem
+          :item="item"
+          @rendered="onItemRendered"
+        />
+      </view>
+    </view>
+    <view
+      v-if="loading"
+      class="loading-overlay"
+    >
+      <view class="spinner" />
+      <view class="loading-text">
+        加载中...
+      </view>
+    </view>
+  </scroll-view>
 </template>
 
 <script setup>
@@ -40,7 +60,6 @@
 	})
 
 	const scrollTop = ref(0)
-	const scrollIntoViewId = ref('')
 	const loading = ref(false)
 	const renderedCount = ref(0)
 	const renderMessages = ref([])

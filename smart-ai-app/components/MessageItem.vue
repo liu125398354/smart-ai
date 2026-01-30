@@ -1,46 +1,63 @@
 <template>
-	<view class="msg-box">
-		<view class="chat-right" v-if="item.role === 'user'">
-			<view>
-				<view class="avatar my">我</view>
-			</view>
-			<view class="chat-right-content">
-				<view class="chat-time chat-right-time">{{ parseTime(item.timestamp) }}</view>
-				<view class="chat-content">{{ item.content }}</view>
-				<!-- <view class="chat-content">
+  <view class="msg-box">
+    <view
+      v-if="item.role === 'user'"
+      class="chat-right"
+    >
+      <view>
+        <view class="avatar my">
+          我
+        </view>
+      </view>
+      <view class="chat-right-content">
+        <view class="chat-time chat-right-time">
+          {{ parseTime(item.timestamp) }}
+        </view>
+        <view class="chat-content">
+          {{ item.content }}
+        </view>
+        <!-- <view class="chat-content">
 				<towxml :nodes="item._parsedContent" />
 			</view> -->
-			</view>
-		</view>
-		<view class="chat-left" v-else>
-			<view>
-				<view class="avatar">AI</view>
-			</view>
-			<view class="chat-left-content">
-				<view class="chat-time">{{ parseTime(item.timestamp) }}</view>
-				<view v-if="item.isChart && item.chartPayload">
-					图表渲染
-				</view>
-				<view v-else class="chat-marked">
-					<towxml :nodes="item._parsedContent" />
-					<!-- <view class="chat-marked">{{ item.content }}</view> -->
-				</view>
-			</view>
-		</view>
-	</view>
+      </view>
+    </view>
+    <view
+      v-else
+      class="chat-left"
+    >
+      <view>
+        <view class="avatar">
+          AI
+        </view>
+      </view>
+      <view class="chat-left-content">
+        <view class="chat-time">
+          {{ parseTime(item.timestamp) }}
+        </view>
+        <view v-if="item.isChart && item.chartPayload">
+          图表渲染
+        </view>
+        <view
+          v-else
+          class="chat-marked"
+        >
+          <towxml :nodes="item._parsedContent" />
+          <!-- <view class="chat-marked">{{ item.content }}</view> -->
+        </view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup>
 	import {
-		computed,
-		getCurrentInstance,
 		onMounted,
 		defineEmits
 	} from 'vue'
 	import {
 		parseTime
 	} from '@/utils'
-	const props = defineProps({
+	defineProps({
 		item: {
 			type: Object,
 			required: true

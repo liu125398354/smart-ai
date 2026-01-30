@@ -1,79 +1,143 @@
 <template>
-	<view class="container">
+  <view class="container">
+    <!-- 左侧侧栏 -->
+    <view
+      class="sidebar"
+      :style="{ transform: `translateX(${sidebarTranslateX}px)` }"
+      data-area="sidebar"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+    >
+      <!-- 滚动列表 -->
+      <scroll-view
+        :style="{ paddingTop: statusBarHeight + 'px' }"
+        class="conversations-list"
+        scroll-y
+      >
+        <view
+          v-for="(item, index) in conversationsList"
+          :key="item.Id"
+          class="item"
+          :class="{ selected: item.conversationId === selectedConversationId }"
+          @longpress="onLongPressList(index, item)"
+          @click="selectConversation(item.conversationId)"
+        >
+          {{ item.conversationName }}
+        </view>
+      </scroll-view>
 
-		<!-- 左侧侧栏 -->
-		<view class="sidebar" :style="{ transform: `translateX(${sidebarTranslateX}px)` }" data-area="sidebar"
-			@touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
-			<!-- 滚动列表 -->
-			<scroll-view :style="{ paddingTop: statusBarHeight + 'px' }" class="conversations-list" scroll-y>
-				<view v-for="(item, index) in conversationsList" :key="item.Id" class="item"
-					:class="{ selected: item.conversationId === selectedConversationId }"
-					@longpress="onLongPressList(index, item)" @click="selectConversation(item.conversationId)">
-					{{ item.conversationName }}
-				</view>
-			</scroll-view>
+      <!-- 底部固定信息区 -->
+      <view class="sidebar-bottom">
+        <view class="user-info">
+          {{ userInfo.username }}
+        </view>
+        <view class="settings">
+          ⚙️
+        </view>
+      </view>
+    </view>
 
-			<!-- 底部固定信息区 -->
-			<view class="sidebar-bottom">
-				<view class="user-info">{{ userInfo.username }}</view>
-				<view class="settings">⚙️</view>
-			</view>
-		</view>
+    <!-- 主区域 -->
+    <view
+      class="main"
+      :style="{
+        transform: `translateX(${mainTranslateX}px) translateY(-${keyboardHeight}px)`
+      }"
+      data-area="main"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+      @click="handleMainClick"
+    >
+      <!-- 顶部栏 -->
+      <view
+        class="top-bar"
+        :style="{ paddingTop: statusBarHeight + 'px', flex: `0 0 ${navBarHeight}px` }"
+      >
+        <!-- 注意：这里 .stop 以防按钮点击冒泡触发主区的点击关闭 -->
+        <!-- 左侧按钮容器 -->
+        <view class="left-buttons">
+          <view
+            class="top-left-btn"
+            @click.stop="toggleSidebar"
+          >
+            ☰
+          </view>
+          <view
+            class="top-right-btn"
+            @click="createConversation"
+          >
+            ＋
+          </view>
+        </view>
+        <view class="top-title">
+          新对话
+        </view>
+      </view>
 
-		<!-- 主区域 -->
-		<view class="main" :style="{
-		  transform: `translateX(${mainTranslateX}px) translateY(-${keyboardHeight}px)`
-		}" data-area="main" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd"
-			@click="handleMainClick">
+      <div
+        v-if="messageList.length === 0"
+        class="no-message"
+      >
+        你好，我是chatgpt，很高兴见到你！
+      </div>
+      <ChatView
+        v-else
+        class="chat-view"
+        :messages="messageList"
+        :switching="switching"
+        @ready="onChatReady"
+      />
 
-			<!-- 顶部栏 -->
-			<view class="top-bar" :style="{ paddingTop: statusBarHeight + 'px', flex: `0 0 ${navBarHeight}px` }">
-				<!-- 注意：这里 .stop 以防按钮点击冒泡触发主区的点击关闭 -->
-				<!-- 左侧按钮容器 -->
-				<view class="left-buttons">
-					<view class="top-left-btn" @click.stop="toggleSidebar">☰</view>
-					<view class="top-right-btn" @click="createConversation">＋</view>
-				</view>
-				<view class="top-title">新对话</view>
-			</view>
-
-			<div v-if="messageList.length === 0" class="no-message">
-				你好，我是chatgpt，很高兴见到你！
-			</div>
-			<ChatView v-else class="chat-view" :messages="messageList" :switching="switching" @ready="onChatReady">
-			</ChatView>
-
-			<!-- 输入区 -->
-			<view class="chat-input-bar">
-				<view class="input-wrapper">
-					<textarea v-model="inputText" class="chat-input" auto-height placeholder="请输入内容" :maxlength="500"
-						:show-confirm-bar="false" :adjust-position="false" />
-					<view class="input-actions">
-						<view class="send-btn" :class="{ disabled: !inputText.trim() }" @click="sendMessage">
-							➤
-						</view>
-					</view>
-				</view>
-			</view>
+      <!-- 输入区 -->
+      <view class="chat-input-bar">
+        <view class="input-wrapper">
+          <textarea
+            v-model="inputText"
+            class="chat-input"
+            auto-height
+            placeholder="请输入内容"
+            :maxlength="500"
+            :show-confirm-bar="false"
+            :adjust-position="false"
+          />
+          <view class="input-actions">
+            <view
+              class="send-btn"
+              :class="{ disabled: !inputText.trim() }"
+              @click="sendMessage"
+            >
+              ➤
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
 
 
-		</view>
-
-
-		<uni-popup ref="renamePopup" type="dialog">
-			<uni-popup-dialog mode="input" title="重命名会话" v-model="renameValue" placeholder="请输入会话名称"
-				@close="closeRename" :before-close="true" @confirm="confirmRename" />
-		</uni-popup>
-	</view>
+    <uni-popup
+      ref="renamePopup"
+      type="dialog"
+    >
+      <uni-popup-dialog
+        v-model="renameValue"
+        mode="input"
+        title="重命名会话"
+        placeholder="请输入会话名称"
+        :before-close="true"
+        @close="closeRename"
+        @confirm="confirmRename"
+      />
+    </uni-popup>
+  </view>
 </template>
 
 <script setup>
 	import {
 		ref,
 		onMounted,
-		computed,
-		nextTick,
-		getCurrentInstance
+		computed
 	} from 'vue'
 	import chatApi from "@/api/chat"
 	import ChatView from "@/components/ChatView.vue"
@@ -123,21 +187,14 @@
 	const inputText = ref('')
 	const keyboardHeight = ref(0)
 
-	const {
-		proxy
-	} = getCurrentInstance()
 	let streamController = null
 	const switching = ref(false)
-
 
 	const messageList = computed(() => chatStore.getMessageData)
 	const conversationsList = computed(() => chatStore.getConversationsData)
 	const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
 	const userId = computed(() => userStore.getUserId)
-	const token = computed(() => userStore.getToken)
 	const userInfo = computed(() => userStore.getUserInfo)
-
-
 	onMounted(async () => {
 		uni.onKeyboardHeightChange(res => {
 			keyboardHeight.value = res.height || 0

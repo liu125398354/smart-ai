@@ -1,11 +1,11 @@
 import request from "@/api/request"
 
 export default {
-	sendMessage(params, config) {
+	sendMessage(params) {
 		return request.post("/chat/getMessage", params)
 	},
 
-	sendQianFan(params, config) {
+	sendQianFan(params) {
 		return request.post("/qianfan/getQianFanMessage", params)
 	},
 
