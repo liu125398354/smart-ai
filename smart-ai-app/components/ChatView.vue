@@ -1,170 +1,175 @@
 <template>
-  <scroll-view
-    scroll-y
-    class="chat-scroll"
-    :scroll-with-animation="true"
-    :scroll-top="scrollTop"
-  >
-    <view class="chat-list" :class="{ 'list-hidden': !loading }">
-      <view
-        v-for="(item, index) in renderMessages"
-        :key="item.createTime"
-        :id="'msg-' + item.createTime"
-        class="msg-row"
-      >
-        <MessageItem :item="item" @rendered="onItemRendered"/>
-      </view>
-    </view>
-	<view v-if="loading" class="loading-overlay">
-	  <view class="spinner"></view>
-	  <view class="loading-text">加载中...</view>
-	</view>
-  </scroll-view>
+	<scroll-view scroll-y class="chat-scroll" :scroll-with-animation="true" :scroll-top="scrollTop">
+		<view class="chat-list" :class="{ 'list-hidden': !loading }">
+			<view v-for="(item, index) in renderMessages" :key="item.createTime" :id="'msg-' + item.createTime"
+				class="msg-row">
+				<MessageItem :item="item" @rendered="onItemRendered" />
+			</view>
+		</view>
+		<view v-if="loading" class="loading-overlay">
+			<view class="spinner"></view>
+			<view class="loading-text">加载中...</view>
+		</view>
+	</scroll-view>
 </template>
 
 <script setup>
-import { ref, nextTick, watch, onMounted, getCurrentInstance } from 'vue'
-import MessageItem from './MessageItem.vue'
+	import {
+		ref,
+		nextTick,
+		watch,
+		onMounted,
+		getCurrentInstance
+	} from 'vue'
+	import MessageItem from './MessageItem.vue'
 
-const { proxy } = getCurrentInstance()
-const emit = defineEmits(['ready'])
+	const {
+		proxy
+	} = getCurrentInstance()
+	const emit = defineEmits(['ready'])
 
-const props = defineProps({
-  messages: {
-    type: Array,
-    default: () => []
-  },
-  switching: {
-      type: Boolean,
-      default: false
-    }
-})
-
-const scrollTop = ref(0)
-const scrollIntoViewId = ref('')
-const loading = ref(false)
-const renderedCount = ref(0)
-const renderMessages = ref([])
-
-// 切换会话触发
-watch(
-  () => props.switching,
-  async (val) => {
-	if (!val) return
-    renderedCount.value = 0
-    loading.value = true
-    // 先清空旧列表
-    renderMessages.value = []
-    // 等 Vue 清空 DOM 后再赋值新消息
-    await nextTick()
-    renderMessages.value = props.messages
-  }
-)
-
-// 流式消息触发
-watch(
-  () => props.messages,
-  async (val) => {
-	if (props.switching) return
-	renderMessages.value = val
-	await nextTick()
-	scrollToBottom() 
-  },
-  { deep: true }
-)
-
-onMounted(() => {
-	renderMessages.value = props.messages
-})
-
-function onItemRendered() {
-  renderedCount.value++
-  if (renderedCount.value === props.messages.length) {
-	nextTick(() => {
-	  // 延迟确保 DOM 更新完成
-	  setTimeout(() => {
-		loading.value = false
-		scrollToBottom()
-		emit('ready')
-	  }, 1000)
+	const props = defineProps({
+		messages: {
+			type: Array,
+			default: () => []
+		},
+		switching: {
+			type: Boolean,
+			default: false
+		}
 	})
-  }
-}
 
-function scrollToBottom() {
-  nextTick(() => {
-		const query = uni.createSelectorQuery().in(proxy)
-		query.select('.chat-scroll').boundingClientRect()
-		query.select('.chat-list').boundingClientRect()
-		query.exec(res => {
-		  const scrollViewHeight = res[0].height
-		  const scrollContentHeight = res[1].height
-		  if (scrollContentHeight > scrollViewHeight) {
-			scrollTop.value = scrollContentHeight - scrollViewHeight + 200
-		  }
+	const scrollTop = ref(0)
+	const scrollIntoViewId = ref('')
+	const loading = ref(false)
+	const renderedCount = ref(0)
+	const renderMessages = ref([])
+
+	// 切换会话触发
+	watch(
+		() => props.switching,
+		async (val) => {
+			if (!val) return
+			renderedCount.value = 0
+			loading.value = true
+			// 先清空旧列表
+			renderMessages.value = []
+			// 等 Vue 清空 DOM 后再赋值新消息
+			await nextTick()
+			renderMessages.value = props.messages
+		}
+	)
+
+	// 流式消息触发
+	watch(
+		() => props.messages,
+		async (val) => {
+			if (props.switching) return
+			renderMessages.value = val
+			await nextTick()
+			scrollToBottom()
+		}, {
+			deep: true
+		}
+	)
+
+	onMounted(() => {
+		renderMessages.value = props.messages
+	})
+
+	function onItemRendered() {
+		renderedCount.value++
+		if (renderedCount.value === props.messages.length) {
+			nextTick(() => {
+				// 延迟确保 DOM 更新完成
+				setTimeout(() => {
+					loading.value = false
+					scrollToBottom()
+					emit('ready')
+				}, 1000)
+			})
+		}
+	}
+
+	function scrollToBottom() {
+		nextTick(() => {
+			const query = uni.createSelectorQuery().in(proxy)
+			query.select('.chat-scroll').boundingClientRect()
+			query.select('.chat-list').boundingClientRect()
+			query.exec(res => {
+				const scrollViewHeight = res[0].height
+				const scrollContentHeight = res[1].height
+				if (scrollContentHeight > scrollViewHeight) {
+					scrollTop.value = scrollContentHeight - scrollViewHeight + 200
+				}
+			})
 		})
-	})
-}
+	}
 </script>
 
 <style scoped>
-.chat-scroll {
-  height: 100%;
-  box-sizing: border-box;
-}
+	.chat-scroll {
+		height: 100%;
+		box-sizing: border-box;
+	}
 
-.chat-list {
-  visibility: hidden;
-  padding: 30rpx;
-  box-sizing: border-box;
-}
+	.chat-list {
+		visibility: hidden;
+		padding: 30rpx;
+		box-sizing: border-box;
+	}
 
-.list-hidden {
-	visibility: visible;
-}
+	.list-hidden {
+		visibility: visible;
+	}
 
-/* 每条消息之间的距离 */
-.msg-row {
-  margin-bottom: 26rpx;
-}
+	/* 每条消息之间的距离 */
+	.msg-row {
+		margin-bottom: 26rpx;
+	}
 
-.scroll-bottom-anchor {
-  height: 10rpx;
-  width: 100%;
-  visibility: hidden;
-}
+	.scroll-bottom-anchor {
+		height: 10rpx;
+		width: 100%;
+		visibility: hidden;
+	}
 
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
+	.loading-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+	}
 
-/* 旋转动画 */
-.spinner {
-  width: 60rpx;
-  height: 60rpx;
-  border: 6rpx solid #ccc;
-  border-top-color: #007aff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20rpx;
-}
+	/* 旋转动画 */
+	.spinner {
+		width: 60rpx;
+		height: 60rpx;
+		border: 6rpx solid #ccc;
+		border-top-color: #007aff;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 20rpx;
+	}
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
 
-.loading-text {
-  font-size: 28rpx;
-  color: #666;
-}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.loading-text {
+		font-size: 28rpx;
+		color: #666;
+	}
 </style>

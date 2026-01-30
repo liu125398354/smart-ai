@@ -3,9 +3,9 @@
 		{
 			"path": "pages/chat/chat",
 			"style": {
-				"navigationStyle": "custom",       // 使用自定义导航栏，隐藏系统导航栏
-				"navigationBarTitleText": "",      // 系统导航栏标题已隐藏
-				"navigationBarBackgroundColor": "#ffffff", 
+				"navigationStyle": "custom", // 使用自定义导航栏，隐藏系统导航栏
+				"navigationBarTitleText": "", // 系统导航栏标题已隐藏
+				"navigationBarBackgroundColor": "#ffffff",
 				"backgroundColor": "#ffffff",
 				"enablePullDownRefresh": false
 			}
@@ -17,7 +17,7 @@
 		"navigationBarBackgroundColor": "#fff",
 		"backgroundColor": "#fff",
 		"usingComponents": {
-		    "towxml": "/wxcomponents/towxml/towxml"
+			"towxml": "/wxcomponents/towxml/towxml"
 		}
 	},
 	"uniIdRouter": {}
