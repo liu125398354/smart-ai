@@ -31,7 +31,8 @@ smart-ai
 │   ├── api                             # 小程序端接口封装
 │   │   ├── auth.js                     # 登录 / 注册 / Token 相关接口
 │   │   ├── chat.js                     # 聊天业务接口
-│   │   └── request.js                  # 基于 uni.request 的请求封装
+│   │   ├── request.js                  # 基于 uni.request 的普通请求封装
+│   │   └── streamRequest.js            # 小程序流式请求的单独封装
 │   ├── components                      # 可复用 UI 组件
 │   │   ├── ChatView.vue                # 聊天窗口组件（展示消息流）
 │   │   └── MessageItem.vue             # 单条消息组件（文本/图片等）
@@ -131,6 +132,10 @@ smart-ai
 
 - 后端项目依赖：nodemon（本地安装）
 
+- HBuilderX（推荐最新版正式版）
+
+- 微信开发者工具（最新版）
+
 ## 快速启动
 
 1. 安装依赖
@@ -168,6 +173,24 @@ smart-ai
    ```
      npm run start:backend
    ```
+5. 启动小程序端（Uni-App / 微信小程序）
+   启动步骤如下：
+
+   - 使用 **HBuilderX** 打开 `smart-ai-app` 目录
+   - 确保已在 HBuilderX 中安装 **uni-app / Vue3** 相关插件
+   - 在顶部菜单中选择：
+
+     ```
+     运行 → 运行到小程序模拟器 → 微信开发者工具
+     ```
+
+   HBuilderX 将自动完成以下流程：
+
+   - 编译 uni-app（Vue3）项目
+   - 生成微信小程序代码
+   - 调起微信开发者工具并加载项目
+
+   > 真机调试可在微信开发者工具中点击「预览」并扫码运行
 
 ## 使用工具
 
