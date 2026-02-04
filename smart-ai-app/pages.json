@@ -9,6 +9,13 @@
 				"backgroundColor": "#ffffff",
 				"enablePullDownRefresh": false
 			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#ffffff"
+			}
 		}
 	],
 	"globalStyle": {

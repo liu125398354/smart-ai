@@ -11,6 +11,7 @@
     >
       <!-- 滚动列表 -->
       <scroll-view
+        v-if="isLogin"
         :style="{ paddingTop: statusBarHeight + 'px' }"
         class="conversations-list"
         scroll-y
@@ -28,12 +29,28 @@
       </scroll-view>
 
       <!-- 底部固定信息区 -->
-      <view class="sidebar-bottom">
+      <view
+        v-if="isLogin"
+        class="sidebar-bottom"
+      >
         <view class="user-info">
           {{ userInfo.username }}
         </view>
         <view class="settings">
           ⚙️
+        </view>
+      </view>
+
+      <!-- 未登录提示 -->
+      <view
+        v-if="!isLogin"
+        class="no-login-tip"
+      >
+        <view
+          class="go-login"
+          @click="goLogin"
+        >
+          去登录
         </view>
       </view>
     </view>
@@ -190,6 +207,7 @@
 	let streamController = null
 	const switching = ref(false)
 
+	const isLogin = computed(() => !!userStore.getToken)
 	const messageList = computed(() => chatStore.getMessageData)
 	const conversationsList = computed(() => chatStore.getConversationsData)
 	const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
@@ -210,6 +228,12 @@
 			capsuleTop.value = menuButtonInfo.top // 用于后续标题垂直居中计算
 		}
 		// chatStore.setMessage()
+		if (isLogin.value) {
+			await loadChatData()
+		}
+	})
+
+	async function loadChatData() {
 		try {
 			await initConversationsList()
 			await initChatMessages()
@@ -217,7 +241,8 @@
 		} catch (error) {
 			console.error('加载列表失败:', error)
 		}
-	})
+	}
+
 
 	async function initConversationsList() {
 		return chatStore.getConversationsList({
@@ -522,6 +547,12 @@
 	function onChatReady() {
 		switching.value = false
 	}
+
+	function goLogin() {
+		uni.navigateTo({
+			url: '/pages/login/login'
+		})
+	}
 </script>
 
 <style lang="scss">
@@ -579,6 +610,23 @@
 		align-items: center;
 		padding: 0 15rpx;
 		border-top: 1rpx solid #ccc;
+	}
+
+	.no-login-tip {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+
+		.go-login {
+			background-color: rgba(220, 220, 220, 0.4);
+			width: 200rpx;
+			height: 80rpx;
+			line-height: 80rpx;
+			text-align: center;
+			border-radius: 20rpx;
+			font-size: 40rpx;
+		}
 	}
 
 	/* 用户信息 & 设置 */
