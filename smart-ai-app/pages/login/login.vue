@@ -1,53 +1,51 @@
 <template>
   <view class="container">
     <!-- 顶部标题 -->
-    <view class="header">
-      <text class="title">
-        密码登录
-      </text>
-    </view>
+    <BaseNavBar title="密码登录" />
 
-    <!-- 欢迎文案 -->
-    <view class="welcome">
-      <text class="welcome-text">
-        您好，
-      </text>
-      <text class="welcome-text bold">
-        欢迎使用 SmartAI
-      </text>
-    </view>
+    <view class="content">
+      <!-- 欢迎文案 -->
+      <view class="welcome">
+        <text class="welcome-text">
+          您好，
+        </text>
+        <text class="welcome-text bold">
+          欢迎使用 SmartAI
+        </text>
+      </view>
 
-    <!-- 表单区域 -->
-    <view class="form">
-      <input
-        v-model="phone"
-        class="input"
-        type="number"
-        maxlength="11"
-        placeholder="请输入用户名"
-      >
+      <!-- 表单区域 -->
+      <view class="form">
+        <input
+          v-model="phone"
+          class="input"
+          type="number"
+          maxlength="11"
+          placeholder="请输入用户名"
+        >
 
-      <input
-        v-model="password"
-        class="input"
-        type="password"
-        placeholder="请输入密码"
-      >
+        <input
+          v-model="password"
+          class="input"
+          type="password"
+          placeholder="请输入密码"
+        >
 
-      <button
-        class="login-btn"
-        :class="{ disabled: !canSubmit }"
-        @click="handleLogin"
-      >
-        登录
-      </button>
+        <button
+          class="login-btn"
+          :class="{ disabled: !canSubmit }"
+          @click="handleLogin"
+        >
+          登录
+        </button>
 
-      <!-- 切换登录方式 -->
-      <view
-        class="switch"
-        @click="toCodeLogin"
-      >
-        用验证码登录
+        <!-- 切换登录方式 -->
+        <view
+          class="switch"
+          @click="toCodeLogin"
+        >
+          用验证码登录
+        </view>
       </view>
     </view>
   </view>
@@ -62,7 +60,9 @@
 	import {
 		useUserStore
 	} from '@/stores/user'
+
 	import authApi from "@/api/auth.js"
+	import BaseNavBar from "@/components/BaseNavBar.vue"
 
 	const phone = ref('')
 	const password = ref('')
@@ -169,22 +169,16 @@
 
 <style lang="scss">
 	.container {
-		padding: 0 40rpx;
-		min-height: 100vh;
+		height: 100vh;
 		background: #fff;
 	}
 
-	.header {
-		text-align: center;
-		margin-bottom: 80rpx;
-
-		.title {
-			font-size: 32rpx;
-			font-weight: 500;
-		}
+	.content {
+		padding: 0 40rpx
 	}
 
 	.welcome {
+		margin-top: 80rpx;
 		margin-bottom: 80rpx;
 
 		.welcome-text {

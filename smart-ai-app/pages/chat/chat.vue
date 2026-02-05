@@ -169,12 +169,20 @@
 		useUserStore
 	} from '@/stores/user'
 
+	import {
+		useSystemStore
+	} from '@/stores/system'
+	import {
+		storeToRefs
+	} from 'pinia'
+
 	const chatStore = useChatStore()
 	const userStore = useUserStore()
-
-	const statusBarHeight = ref(0) // 状态栏高度
-	const navBarHeight = ref(44) // 导航栏默认高度，单位px
-	const capsuleTop = ref(0) // 胶囊上边界距顶部距离
+	const systemStore = useSystemStore()
+	const {
+		statusBarHeight,
+		navBarHeight
+	} = storeToRefs(systemStore)
 
 	// sidebarWidth 改成屏幕宽度 * 0.7（70vw）
 	const sidebarWidth = uni.getWindowInfo().windowWidth * 0.7
@@ -217,16 +225,6 @@
 		uni.onKeyboardHeightChange(res => {
 			keyboardHeight.value = res.height || 0
 		})
-		const systemInfo = uni.getSystemInfoSync()
-		statusBarHeight.value = systemInfo.statusBarHeight // 获取状态栏高度
-
-		// 注意：getMenuButtonBoundingClientRect 在微信小程序中可用
-		const menuButtonInfo = uni.getMenuButtonBoundingClientRect()
-		if (menuButtonInfo) {
-			// 计算导航栏高度 = 胶囊高度 + (胶囊距顶距离 - 状态栏高度) * 2
-			navBarHeight.value = menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight.value) * 2
-			capsuleTop.value = menuButtonInfo.top // 用于后续标题垂直居中计算
-		}
 		// chatStore.setMessage()
 		if (isLogin.value) {
 			await loadChatData()
