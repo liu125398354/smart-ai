@@ -33,11 +33,11 @@
         v-if="isLogin"
         class="sidebar-bottom"
       >
-        <view class="user-info">
+        <view
+          class="user-info"
+          @click="goSetting"
+        >
           {{ userInfo.username }}
-        </view>
-        <view class="settings">
-          ⚙️
         </view>
       </view>
 
@@ -221,10 +221,12 @@
 	const selectedConversationId = computed(() => chatStore.getSelectedConversationId)
 	const userId = computed(() => userStore.getUserId)
 	const userInfo = computed(() => userStore.getUserInfo)
+
 	onMounted(async () => {
 		uni.onKeyboardHeightChange(res => {
 			keyboardHeight.value = res.height || 0
 		})
+		console.log("mounted--->", isLogin.value)
 		// chatStore.setMessage()
 		if (isLogin.value) {
 			await loadChatData()
@@ -549,6 +551,12 @@
 	function goLogin() {
 		uni.navigateTo({
 			url: '/pages/login/login'
+		})
+	}
+
+	function goSetting() {
+		uni.navigateTo({
+			url: '/pages/setting/setting'
 		})
 	}
 </script>

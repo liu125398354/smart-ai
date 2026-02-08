@@ -16,6 +16,13 @@
 				"navigationStyle": "custom",
 				"backgroundColor": "#ffffff"
 			}
+		},
+		{
+			"path": "pages/setting/setting",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#ffffff"
+			}
 		}
 	],
 	"globalStyle": {

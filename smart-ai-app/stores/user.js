@@ -43,6 +43,7 @@ export const useUserStore = defineStore('user', {
 			return state.userInfo
 		},
 		getToken: (state) => {
+			console.log("token-------", state.token)
 			return state.token
 		}
 	},
@@ -59,6 +60,7 @@ export const useUserStore = defineStore('user', {
 		clearUserInfo() {
 			this.userInfo = null
 			// 清除本地存储
+			this.token = null
 			removeLocal('token')
 			removeLocal('userInfo')
 		}

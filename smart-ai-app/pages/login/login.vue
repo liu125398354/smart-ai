@@ -1,7 +1,11 @@
 <template>
-  <view class="container">
+  <view class="login-container">
     <!-- 顶部标题 -->
-    <BaseNavBar title="密码登录" />
+    <BaseNavBar
+      title="密码登录"
+      :auto-back="false"
+      @back="handleBack"
+    />
 
     <view class="content">
       <!-- 欢迎文案 -->
@@ -164,11 +168,17 @@
 			url: '/pages/login/code-login'
 		})
 	}
+
+	function handleBack() {
+		uni.reLaunch({
+			url: '/pages/chat/chat'
+		})
+	}
 </script>
 
 
 <style lang="scss">
-	.container {
+	.login-container {
 		height: 100vh;
 		background: #fff;
 	}
