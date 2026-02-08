@@ -34,11 +34,16 @@ smart-ai
 │   │   ├── request.js                  # 基于 uni.request 的普通请求封装
 │   │   └── streamRequest.js            # 小程序流式请求的单独封装
 │   ├── components                      # 可复用 UI 组件
+│   │   ├── BaseNavBar.vue              # 顶部标题通用组件
 │   │   ├── ChatView.vue                # 聊天窗口组件（展示消息流）
 │   │   └── MessageItem.vue             # 单条消息组件（文本/图片等）
 │   ├── pages                           # 小程序页面目录
-│   │   └── chat
-│   │       └── chat.vue                # 聊天主页面（入口页面）
+│   │   ├── chat
+│   │   │   └── chat.vue                # 聊天主页面（入口页面）
+│   │   ├── login
+│   │   │   └── login.vue               # 登录页面
+│   │   └── setting
+│   │       └── setting.vue             # 账号设置页面
 │   ├── static                          # 静态资源目录
 │   │   └── logo.png                    # 默认 Logo 示例
 │   ├── stores                          # pina状态管理
