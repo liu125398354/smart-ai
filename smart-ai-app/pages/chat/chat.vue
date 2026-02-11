@@ -94,10 +94,10 @@
       </view>
 
       <div
-        v-if="messageList.length === 0"
+        v-if="messageList.length === 0 || !isLogin"
         class="no-message"
       >
-        你好，我是chatgpt，很高兴见到你！
+        你好，我是SmartAI，很高兴见到你！
       </div>
       <ChatView
         v-else
@@ -492,6 +492,12 @@
 
 	// 发送消息
 	function sendMessage() {
+		if (!isLogin.value) {
+			uni.navigateTo({
+				url: '/pages/login/login'
+			})
+			return
+		}
 		const userText = inputText.value.trim()
 		if (!userText) return
 
