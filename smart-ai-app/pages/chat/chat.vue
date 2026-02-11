@@ -75,21 +75,23 @@
         <!-- 注意：这里 .stop 以防按钮点击冒泡触发主区的点击关闭 -->
         <!-- 左侧按钮容器 -->
         <view class="left-buttons">
-          <view
-            class="top-left-btn"
-            @click.stop="toggleSidebar"
-          >
-            ☰
+          <view @click.stop="toggleSidebar">
+            <uni-icons
+              class="top-left-btn"
+              type="bars"
+              size="24"
+            />
           </view>
-          <view
-            class="top-right-btn"
-            @click="createConversation"
-          >
-            ＋
+          <view @click="createConversation">
+            <uni-icons
+              class="top-right-btn"
+              type="plusempty"
+              size="24"
+            />
           </view>
         </view>
         <view class="top-title">
-          新对话
+          SmartAI
         </view>
       </view>
 
@@ -125,7 +127,11 @@
               :class="{ disabled: !inputText.trim() }"
               @click="sendMessage"
             >
-              ➤
+              <uni-icons
+                type="arrow-up"
+                color="#fff"
+                size="24"
+              />
             </view>
           </view>
         </view>
@@ -485,6 +491,12 @@
 
 	// 创建新对话
 	function createConversation() {
+		if (!isLogin.value) {
+			uni.navigateTo({
+				url: '/pages/login/login'
+			})
+			return
+		}
 		stopGenerate()
 		// 每次开始新对话时，messageList数据都会清空
 		chatStore.setSelectedConversationId(null)
@@ -683,8 +695,8 @@
 
 	.top-left-btn,
 	.top-right-btn {
-		/* 按钮样式 */
-		font-size: 40rpx;
+		display: flex;
+		align-items: center;
 		margin-right: 20rpx;
 	}
 
