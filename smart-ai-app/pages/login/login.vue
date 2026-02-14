@@ -44,12 +44,12 @@
         </button>
 
         <!-- 切换登录方式 -->
-        <view
+        <!-- <view
           class="switch"
           @click="toCodeLogin"
         >
           用验证码登录
-        </view>
+        </view> -->
       </view>
     </view>
   </view>
@@ -163,15 +163,15 @@
 		// #endif
 	}
 
-	function toCodeLogin() {
-		uni.navigateTo({
-			url: '/pages/login/code-login'
-		})
-	}
+	// function toCodeLogin() {
+	// 	uni.navigateTo({
+	// 		url: '/pages/login/code-login'
+	// 	})
+	// }
 
 	function handleBack() {
-		uni.reLaunch({
-			url: '/pages/chat/chat'
+		uni.navigateTo({
+			url: '/pages/PhoneLogin/PhoneLogin'
 		})
 	}
 </script>
@@ -214,13 +214,17 @@
 			margin-top: 40rpx;
 			height: 96rpx;
 			line-height: 96rpx;
-			background: #3b82f6;
+			background: #3b82f7;
 			color: #fff;
 			border-radius: 48rpx;
 			font-size: 34rpx;
 
 			&.disabled {
 				background: #cbd5e1;
+			}
+
+			&::after {
+				border-color: #3b82f7;
 			}
 		}
 	}

@@ -24,7 +24,7 @@
 	function handleLogout() {
 		userStore.clearUserInfo()
 		uni.navigateTo({
-			url: '/pages/login/login'
+			url: '/pages/PhoneLogin/PhoneLogin'
 		})
 	}
 </script>

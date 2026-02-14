@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: false }, // 微信登录可为空
     email: { type: String, required: false, unique: true }, // 微信用户可为空
+    phone: { type: String, unique: true, sparse: true },
     wechatOpenId: { type: String, unique: true, sparse: true }, // 新增微信 openid
     created_at: { type: Date, default: Date.now }
 });

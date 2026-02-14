@@ -11,6 +11,13 @@
 			}
 		},
 		{
+			"path": "pages/PhoneLogin/PhoneLogin",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#ffffff"
+			}
+		},
+		{
 			"path": "pages/login/login",
 			"style": {
 				"navigationStyle": "custom",

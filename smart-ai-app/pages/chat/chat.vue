@@ -493,7 +493,7 @@
 	function createConversation() {
 		if (!isLogin.value) {
 			uni.navigateTo({
-				url: '/pages/login/login'
+				url: '/pages/PhoneLogin/PhoneLogin'
 			})
 			return
 		}
@@ -506,7 +506,7 @@
 	function sendMessage() {
 		if (!isLogin.value) {
 			uni.navigateTo({
-				url: '/pages/login/login'
+				url: '/pages/PhoneLogin/PhoneLogin'
 			})
 			return
 		}
@@ -568,7 +568,7 @@
 
 	function goLogin() {
 		uni.navigateTo({
-			url: '/pages/login/login'
+			url: '/pages/PhoneLogin/PhoneLogin'
 		})
 	}
 
