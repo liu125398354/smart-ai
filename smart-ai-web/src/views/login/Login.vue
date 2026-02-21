@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <h1>智能AI助手</h1>
+        <h1>SmartAI</h1>
         <p>欢迎登录您的AI助手平台</p>
       </div>
 

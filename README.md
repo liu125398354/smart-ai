@@ -42,6 +42,8 @@ smart-ai
 │   │   │   └── chat.vue                # 聊天主页面（入口页面）
 │   │   ├── login
 │   │   │   └── login.vue               # 登录页面
+│   │   ├── PhoneLogin
+│   │   │   └── PhoneLogin.vue          # 手机号一键登录页面
 │   │   └── setting
 │   │       └── setting.vue             # 账号设置页面
 │   ├── static                          # 静态资源目录

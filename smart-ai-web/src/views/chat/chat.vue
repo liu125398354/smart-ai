@@ -51,7 +51,7 @@
         <span v-if="showChartAgent" style="color: #999">已开启：直接用自然语言描述要画的图表</span>
       </div>
       <div v-if="messageList.length === 0" class="no-message">
-        你好，我是chatgpt，很高兴见到你！
+        你好，我是SmartAI，很高兴见到你！
       </div>
       <div v-else class="chat-wrapper">
         <ul class="chat-ul">
