@@ -9,6 +9,7 @@ var drawingRouter = require('./routes/drawing');
 var chatRouter = require('./routes/chat');
 var qianFanRouter = require('./routes/qianfan');
 var authRouter = require('./routes/auth');
+var userRouter = require('./routes/user');
 var { authenticateToken } = require('./middleware/authMiddleware');
 
 var app = express();
@@ -16,6 +17,8 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 使用CORS中间件，设置允许跨域的配置，你也可以进行更细粒度的配置，例如：
 app.use(cors({
@@ -33,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/draw', authenticateToken, drawingRouter);
 app.use('/chat', authenticateToken, chatRouter);
 app.use('/qianfan', authenticateToken, qianFanRouter);
+app.use('/user', authenticateToken, userRouter);
 app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
