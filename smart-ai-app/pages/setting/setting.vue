@@ -13,7 +13,7 @@
             @chooseavatar="onChooseAvatar"
           >
             <image
-              :src="avatarUrl || '/static/default-avatar.png'"
+              :src="userInfo?.avatar || '/static/default-avatar.png'"
               class="avatar"
             />
             <view>
@@ -51,7 +51,8 @@
 
 <script setup>
 	import {
-		ref
+		ref,
+		computed
 	} from "vue"
 	import BaseNavBar from "@/components/BaseNavBar.vue"
 	import {
@@ -61,7 +62,7 @@
 
 	const userStore = useUserStore()
 
-	const avatarUrl = ref("")
+	const userInfo = computed(() => userStore.getUserInfo)
 	const nickname = ref("")
 
 	async function onChooseAvatar(e) {
@@ -69,9 +70,7 @@
 		const res = await userApi.uploadAvatar(filePath)
 
 		if (res.success) {
-
-			avatarUrl.value = res.data.avatar
-
+			userStore.updateAvatar(res.data.avatar)
 			uni.showToast({
 				title: "头像更新成功"
 			})
@@ -103,7 +102,7 @@
 
 	function handleLogout() {
 		userStore.clearUserInfo()
-		uni.navigateTo({
+		uni.reLaunch({
 			url: '/pages/PhoneLogin/PhoneLogin'
 		})
 	}

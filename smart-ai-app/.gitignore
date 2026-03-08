@@ -18,6 +18,8 @@ dist/
 package-lock.json
 yarn.lock
 
+uploads
+
 # 临时文件
 *.tmp
 *.temp

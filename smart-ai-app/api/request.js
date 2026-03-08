@@ -7,7 +7,7 @@ import {
 	useUserStore
 } from '@/stores/user'
 
-const BASE_URL = 'http://192.168.1.10:3000' // 根据实际情况修改
+const BASE_URL = 'http://192.168.1.3:3000' // 根据实际情况修改
 
 export default {
 	// GET请求

@@ -57,6 +57,10 @@ export const useUserStore = defineStore('user', {
 			this.userInfo = userInfo
 			saveToLocal('userInfo', userInfo)
 		},
+		updateAvatar(avatar) {
+			this.userInfo.avatar = avatar
+			saveToLocal('userInfo', this.userInfo)
+		},
 		clearUserInfo() {
 			this.userInfo = null
 			// 清除本地存储
