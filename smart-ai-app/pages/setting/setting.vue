@@ -30,7 +30,7 @@
       <view class="avatar-box avatar-bottom">
         <view>昵称</view>
         <view class="nick-name">
-          <view>你好</view>
+          <view>{{ userInfo?.nickname }}</view>
           <view>
             <uni-icons
               type="right"

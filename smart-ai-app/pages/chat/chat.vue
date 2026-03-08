@@ -37,7 +37,7 @@
           class="user-info"
           @click="goSetting"
         >
-          {{ userInfo.username }}
+          {{ userInfo.nickname }}
         </view>
       </view>
 

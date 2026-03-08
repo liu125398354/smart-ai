@@ -143,7 +143,9 @@ router.post('/wxlogin', async (req, res) => {
       // 新用户，创建账号
       user = new User({
         username: `wx_${openid.substring(0,6)}`,
-        wechatOpenId: openid
+        nickname: `用户${Math.floor(100000 + Math.random() * 900000)}`,
+        wechatOpenId: openid,
+        avatar: ""
       });
       await user.save();
     }
@@ -162,7 +164,7 @@ router.post('/wxlogin', async (req, res) => {
         token,
         user: {
           id: user._id,
-          username: user.username,
+          nickname: user.nickname,
           avatar: user.avatar
         }
       }
