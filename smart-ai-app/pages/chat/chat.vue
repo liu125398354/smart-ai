@@ -34,10 +34,16 @@
         class="sidebar-bottom"
       >
         <view
-          class="user-info"
+          class="bottom-wrapper"
           @click="goSetting"
         >
-          {{ userInfo.nickname }}
+          <image
+            :src="userInfo?.avatar || '/static/default-avatar.png'"
+            class="user-avatar"
+          />
+          <view class="user-info">
+            {{ userInfo.nickname }}
+          </view>
         </view>
       </view>
 
@@ -653,8 +659,20 @@
 		}
 	}
 
-	/* 用户信息 & 设置 */
+	.bottom-wrapper {
+		display: flex;
+		align-items: center;
+		margin-left: 50rpx;
+	}
+
+	.user-avatar {
+		width: 60rpx;
+		height: 60rpx;
+		border-radius: 50%;
+	}
+
 	.user-info {
+		margin-left: 20rpx;
 		font-size: 28rpx;
 	}
 

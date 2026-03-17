@@ -29,7 +29,10 @@
       <!-- 昵称 -->
       <view class="avatar-box avatar-bottom">
         <view>昵称</view>
-        <view class="nick-name">
+        <view
+          class="nick-name"
+          @click="changeNickName"
+        >
           <view>{{ userInfo?.nickname }}</view>
           <view>
             <uni-icons
@@ -46,6 +49,20 @@
         退出登录
       </button>
     </view>
+    <uni-popup
+      ref="nickNamePopup"
+      type="dialog"
+    >
+      <uni-popup-dialog
+        v-model="nickname"
+        mode="input"
+        title="修改昵称"
+        placeholder="请输入新昵称"
+        :before-close="true"
+        @close="closeNickName"
+        @confirm="confirmNickName"
+      />
+    </uni-popup>
   </view>
 </template>
 
@@ -64,6 +81,7 @@
 
 	const userInfo = computed(() => userStore.getUserInfo)
 	const nickname = ref("")
+	const nickNamePopup = ref(null)
 
 	async function onChooseAvatar(e) {
 		const filePath = e.detail.avatarUrl
@@ -78,26 +96,9 @@
 		}
 	}
 
-	async function changeNickName() {
-
-		if (!nickname.value.trim()) {
-			uni.showToast({
-				title: "昵称不能为空",
-				icon: "none"
-			})
-			return
-		}
-
-		const res = await userApi.updateNickname(nickname.value)
-
-		if (res.success) {
-
-			uni.showToast({
-				title: "修改成功"
-			})
-
-		}
-
+	function changeNickName() {
+		nickname.value = userInfo.value.nickname
+		nickNamePopup.value.open()
 	}
 
 	function handleLogout() {
@@ -105,6 +106,38 @@
 		uni.reLaunch({
 			url: '/pages/PhoneLogin/PhoneLogin'
 		})
+	}
+
+	function closeNickName() {
+		nickNamePopup.value.close()
+	}
+
+	async function confirmNickName(value) {
+		let changedValue = value.trim()
+		if (!changedValue) {
+			uni.showToast({
+				title: "昵称不能为空",
+				icon: "none"
+			})
+			return
+		}
+		const res = await userApi.updateNickname(changedValue)
+
+		if (res.success) {
+			uni.showToast({
+				title: "修改成功"
+			})
+			userStore.setUserInfo({
+				id: userInfo.value.id,
+				avatar: userInfo.value.avatar,
+				nickname: value.trim()
+			})
+			nickNamePopup.value.close()
+		} else {
+			uni.showToast({
+				title: "修改失败"
+			})
+		}
 	}
 </script>
 

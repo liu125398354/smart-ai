@@ -67,7 +67,6 @@ router.post("/upload-avatar", upload.single("file"), async (req, res) => {
                 message: "未检测到上传文件"
             })
         }
-        console.log("上传文件大小:", req.file.size)
         // 查询旧头像
         const user = await User.findById(userId)
         const oldAvatar = user?.avatar
@@ -109,7 +108,7 @@ router.post("/upload-avatar", upload.single("file"), async (req, res) => {
 router.post('/update-nickname', async (req,res)=>{
 
     const { nickname } = req.body
-    const userId = req.user.userId
+    const userId = req.user._id
 
     await User.findByIdAndUpdate(userId,{
         nickname: nickname
