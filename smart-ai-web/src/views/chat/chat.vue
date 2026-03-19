@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, defineAsyncComponent } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
 import { parseTime } from '@/utils'
@@ -157,9 +157,12 @@ import { createVNode } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 
 // import MarkdownRenderer from "@/components/MarkdownRenderer"
-import MermaidRenderer from '@/components/MermaidRenderer.vue'
-import ChartRenderer from '@/components/ChartRenderer.vue'
+// import MermaidRenderer from '@/components/MermaidRenderer.vue'
+// import ChartRenderer from '@/components/ChartRenderer.vue'
 import chatApi from '@/api/chat'
+
+const MermaidRenderer = defineAsyncComponent(() => import('@/components/MermaidRenderer.vue'))
+const ChartRenderer = defineAsyncComponent(() => import('@/components/ChartRenderer.vue'))
 
 const chatStore = useChatStore()
 const userStore = useUserStore()

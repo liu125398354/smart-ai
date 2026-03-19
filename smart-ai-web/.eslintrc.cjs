@@ -15,7 +15,7 @@ module.exports = {
      * ========================= */
 
     // 生产环境禁止 console / debugger，开发环境允许
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-console': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
 
     // 未使用变量：警告即可（开发阶段非常常见）
