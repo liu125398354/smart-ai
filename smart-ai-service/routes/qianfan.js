@@ -157,7 +157,7 @@ async function handleModelRequest(conversationId, userMessage, historyRecords, r
         const resp = await client.chat({
             messages: messages,
             stream: true,
-        }, "qwen3-next-80b-a3b-instruct");
+        }, process.env.QIANFAN_MODEL);
 
         let fullResponse = '';  // 用于存储完整的响应内容
         // 使用流式迭代将 chunk 内容逐步返回给前端
