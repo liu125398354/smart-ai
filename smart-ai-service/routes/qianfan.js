@@ -1,25 +1,17 @@
 var express = require('express');
 var router = express.Router();
-const axios = require('axios-https-proxy-fix')
 const { v4: uuidv4 } = require('uuid');
-const { ChatCompletion } = require("@baiducloud/qianfan");
-const { setEnvVariable } = require("@baiducloud/qianfan");
 
 // 引入数据库操作模块
 const { saveConversation, getUserConversations, getChatMessagesByUser, getConversationById,
     addMessageToConversation, deleteConversation, updateConversationName } = require('../services/conversationService');
-/**使用安全认证AK/SK鉴权，通过环境变量初始化；替换下列示例中参数，
- * 安全认证Access Key替换your_iam_ak，Secret Key替换your_iam_sk，
- * 如何获取请查看https://cloud.baidu.com/doc/Reference/s/9jwvz2egb
+/**
+ * 千帆 v2 对话接口（OpenAI 兼容协议），使用 API Key 鉴权：
+ * Header: Authorization: Bearer bce-v3/ALTAK-xxx/xxx
+ * 说明：官方 JS SDK（@baiducloud/qianfan）仅支持 AK/SK 换取 IAM token，无法携带 API Key，
+ * 因此这里直接请求 v2 的 /chat/completions 接口。
  * */
-// 从环境变量安全注入 AK/SK
-setEnvVariable('QIANFAN_ACCESS_KEY', process.env.QIANFAN_ACCESS_KEY);
-setEnvVariable('QIANFAN_SECRET_KEY', process.env.QIANFAN_SECRET_KEY);
-
-const client = new  ChatCompletion({
-    version: 'v2',
-    // appid: 'XXX'
-});
+const QIANFAN_CHAT_URL = 'https://qianfan.baidubce.com/v2/chat/completions';
 
 
 /* 获取千帆大模型消息 */
@@ -95,36 +87,75 @@ function extractChartJson(text) {
     return null
 }
 
+// 读取千帆 v2 调用配置，缺失时直接报错，避免把非法模型名发到服务端
+function getQianfanConfig() {
+    const apiKey = (process.env.QIANFAN_API_KEY || '').trim();
+    const model = (process.env.QIANFAN_MODEL || '').trim();
+
+    if (!apiKey) {
+        throw new Error('缺少环境变量 QIANFAN_API_KEY，请配置控制台创建的 API Key（形如 bce-v3/ALTAK-xxx/xxx）');
+    }
+    if (!model) {
+        throw new Error('缺少环境变量 QIANFAN_MODEL，请配置千帆 v2 模型名（例如 deepseek-v3.2）');
+    }
+    return { apiKey, model };
+}
+
+// 以 API Key 方式请求千帆 v2 对话接口，返回流式响应体
+async function requestChatStream(messages) {
+    const { apiKey, model } = getQianfanConfig();
+
+    const resp = await fetch(QIANFAN_CHAT_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+            'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model,
+            messages,
+            stream: true,
+        }),
+    });
+
+    if (!resp.ok) {
+        const detail = await resp.text().catch(() => '');
+        throw new Error(`千帆接口调用失败，status=${resp.status}，body=${detail}`);
+    }
+    return resp.body;
+}
+
+// 解析 SSE 流，逐个产出 data 中的 JSON 对象
+async function* parseSseStream(stream) {
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    for await (const raw of stream) {
+        buffer += decoder.decode(raw, { stream: true });
+
+        let index;
+        while ((index = buffer.indexOf('\n')) !== -1) {
+            const line = buffer.slice(0, index).replace(/\r$/, '');
+            buffer = buffer.slice(index + 1);
+
+            if (!line.startsWith('data:')) continue;
+
+            const payload = line.slice(5).trim();
+            if (!payload || payload === '[DONE]') continue;
+
+            try {
+                yield JSON.parse(payload);
+            } catch (e) {
+                // 忽略无法解析的心跳/空数据
+            }
+        }
+    }
+}
+
 // 处理向大模型发送请求
 async function handleModelRequest(conversationId, userMessage, historyRecords, res, chartAgent) {
     try {
-        /**
-         * EventSource方式返回数据流
-         * */
-            // const resp = await client.chat({
-            //     messages: [
-            //         {
-            //             role: 'user',
-            //             content: req.query.content,
-            //         },
-            //     ],
-            //     stream: true,
-            // }, "ernie-3.5-8k");
-            // res.setHeader('Content-Type', 'text/event-stream');  // 设置正确的 MIME 类型
-            // res.setHeader('Cache-Control', 'no-cache');
-            // res.setHeader('Connection', 'keep-alive');
-            //
-            // // 使用流式迭代将 chunk 内容逐步返回给前端
-            // for await (const data of resp) {
-            //     const chunk = data.choices[0].delta?.content;
-            //     // 将每个 chunk 逐步发送给前端
-            //     res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`); // SSE 格式
-            //     // await new Promise(resolve => setTimeout(resolve, 1000)); // 添加延迟观察效果
-            // }
-            //
-            // // 流结束时发送完成信号
-            // res.end();
-
         let messages = [];
 
         // 历史记录
@@ -154,24 +185,22 @@ async function handleModelRequest(conversationId, userMessage, historyRecords, r
             })
         }
 
-        const resp = await client.chat({
-            messages: messages,
-            stream: true,
-        }, process.env.QIANFAN_MODEL);
+        const stream = await requestChatStream(messages);
 
         let fullResponse = '';  // 用于存储完整的响应内容
         // 使用流式迭代将 chunk 内容逐步返回给前端
-        for await (const data of resp) {
-            const chunk = data.choices[0].delta?.content;
+        for await (const data of parseSseStream(stream)) {
+            // 流式过程中接口返回的错误
+            if (data.error) {
+                throw new Error(`千帆接口返回错误: ${JSON.stringify(data.error)}`);
+            }
+            const chunk = data.choices?.[0]?.delta?.content;
 
-            // 累积响应内容
+            // 累积响应内容，并逐步发送给前端
             if (chunk) {
                 fullResponse += chunk;
+                res.write(chunk);
             }
-            // 将每个 chunk 逐步发送给前端
-            // console.log('nnnode---', data.choices[0].delta);
-            res.write(chunk);
-            // await new Promise(resolve => setTimeout(resolve, 1000)); // 添加延迟观察效果
         }
 
         // 流结束时发送完成信号

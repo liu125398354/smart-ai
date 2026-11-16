@@ -25,3 +25,7 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# HBuilderX
+smart-ai-app/manifest.json
+smart-ai-app/.hbuilderx/
